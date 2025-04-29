@@ -1,0 +1,162 @@
+@model IEnumerable<MiniEquipmentMarketplace.Models.Equipment>
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+<h1>Equipment</h1>
+
+<div class="mb-3">
+  <label for="vendorFilter" class="form-label">Filter by Vendor</label>
+  <select id="vendorFilter" class="form-select">
+    <option value="">All Vendors</option>
+    @foreach (var v in (ViewBag.Vendors as SelectList)!)
+    {
+      <option value="@v.Value">@v.Text</option>
+    }
+  </select>
+</div>
+
+
+
+<div id="equipmentTableWrapper">
+    <table id="equipmentTable" class="table table-striped">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Title)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Vendor)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Title)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Vendor!.Name)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.EquipmentId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.EquipmentId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.EquipmentId">Delete</a>
+            </td>
+                
+            <td>@item.EquipmentId</td>
+            <td>@item.Title</td>
+            <td>@item.Description</td>
+            <td>@item.Price</td>
+            <td>@item.Vendor?.Name</td>
+            <td>
+                <button class="btn btn-info btn-sm view-details" data-id="@item.EquipmentId">
+                Details
+                </button>
+            </td>
+  
+        </tr>
+}
+    </tbody>
+</table>
+</div>
+
+
+<!-- Detail Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="detailModalLabel"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="detailBody"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+@section Scripts {
+<script>
+$(function() {
+  // helper: rebuild table rows
+  function renderTable(data) {
+    const tbody = $('#equipmentTable tbody').empty();
+    data.forEach(item => {
+      tbody.append(`
+        <tr>
+          <td>${item.equipmentId}</td>
+          <td>${item.title}</td>
+          <td>${item.description}</td>
+          <td>${item.price}</td>
+          <td>${item.vendor.name}</td>
+          <td>
+            <button class="btn btn-info btn-sm view-details" data-id="${item.equipmentId}">
+              Details
+            </button>
+          </td>
+        </tr>
+      `);
+    });
+  }
+
+  // 1) Filter by vendor
+$('#vendorFilter').on('change', function() {
+  const vid = $(this).val();
+  let url = '/api/EquipmentApi';
+  if (vid) {
+    // only append when a real vendor is chosen
+    url += '?vendorId=' + encodeURIComponent(vid);
+  }
+  $.get(url)
+    .done(renderTable)
+    .fail((xhr, status, err) => {
+      console.error('Filter error:', status, err);
+      alert('Failed to filter equipment.');
+    });
+});
+
+
+  // 2) Delegate click for dynamic buttons
+  $('#equipmentTableWrapper').on('click', '.view-details', function() {
+    const id = $(this).data('id');
+    $.get(`/api/EquipmentApi/${id}`, item => {
+      $('#detailModalLabel').text(item.title);
+      $('#detailBody').html(`
+        <p><strong>Description:</strong> ${item.description}</p>
+        <p><strong>Price:</strong> $${item.price}</p>
+        <p><strong>Vendor:</strong> ${item.vendor.name}</p>
+      `);
+      new bootstrap.Modal($('#detailModal')).show();
+    });
+  });
+});
+</script>
+}

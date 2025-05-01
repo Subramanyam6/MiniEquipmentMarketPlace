@@ -133,6 +133,8 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
                 }
             }
 
+            _logger.LogInformation("Login attempt for {Email}", Input.Email);
+
             // If we got this far, something failed, redisplay form
             return Page();
         }

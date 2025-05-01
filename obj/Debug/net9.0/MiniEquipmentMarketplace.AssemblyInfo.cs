@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MiniEquipmentMarketplace")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1a50fd3f84f44b15599a8716537835b886e7cdce")]
 [assembly: System.Reflection.AssemblyProductAttribute("MiniEquipmentMarketplace")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MiniEquipmentMarketplace")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

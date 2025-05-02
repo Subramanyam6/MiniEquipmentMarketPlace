@@ -16,8 +16,6 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;    
     options.Cookie.SameSite     = SameSiteMode.None;           
     options.Cookie.Path         = "/";                         
-    // optional: explicitly scope to localhost
-    options.Cookie.Domain       = "localhost";
 });
 
 // Add services to the container.

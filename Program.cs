@@ -5,6 +5,7 @@ using MiniEquipmentMarketplace.Models;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 

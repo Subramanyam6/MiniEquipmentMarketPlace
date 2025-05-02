@@ -45,6 +45,8 @@ builder.Services.AddRazorPages();  // for Identity UI
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
+builder.Logging.AddAzureWebAppDiagnostics();
+
 
 var app = builder.Build();
 

@@ -1,0 +1,26 @@
+# .NET build folders
+bin/
+obj/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.vs/
+*.vscode/
+
+# Rider
+.idea/
+
+# Azure Functions local files
+local.settings.json
+
+# Logs
+*.log
+
+# Publish output
+publish/
+
+# Database files
+*.mdf
+*.ldf

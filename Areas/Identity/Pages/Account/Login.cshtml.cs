@@ -1,3 +1,4 @@
+
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
@@ -103,6 +104,8 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
+            _logger.LogInformation("Login attempt for {Email}", Input.Email);
+
             returnUrl ??= Url.Content("~/");
 
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
@@ -132,8 +135,6 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
                     return Page();
                 }
             }
-
-            _logger.LogInformation("Login attempt for {Email}", Input.Email);
 
             // If we got this far, something failed, redisplay form
             return Page();

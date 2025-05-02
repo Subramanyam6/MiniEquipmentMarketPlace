@@ -42,6 +42,10 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
   .AddEntityFrameworkStores<AppDbContext>();
 builder.Services.AddRazorPages();  // for Identity UI
 
+builder.Logging.SetMinimumLevel(LogLevel.Information);
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 var app = builder.Build();
 
 // error-handling & HTTPS  

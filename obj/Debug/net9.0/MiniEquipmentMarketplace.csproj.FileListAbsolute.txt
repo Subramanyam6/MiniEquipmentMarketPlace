@@ -411,3 +411,15 @@
 /Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/obj/Debug/net9.0/MiniEquipmentMarketplace.pdb
 /Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/obj/Debug/net9.0/MiniEquipmentMarketplace.genruntimeconfig.cache
 /Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/obj/Debug/net9.0/ref/MiniEquipmentMarketplace.dll
+/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/Microsoft.Extensions.Configuration.dll
+/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/Microsoft.Extensions.Configuration.Binder.dll
+/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/Microsoft.Extensions.Configuration.EnvironmentVariables.dll
+/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/Microsoft.Extensions.Configuration.FileExtensions.dll
+/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/Microsoft.Extensions.Configuration.Json.dll
+/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/Microsoft.Extensions.FileProviders.Physical.dll
+/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/Microsoft.Extensions.FileSystemGlobbing.dll
+/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/Microsoft.Extensions.Logging.AzureAppServices.dll
+/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/Microsoft.Extensions.Logging.Configuration.dll
+/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/Microsoft.Extensions.Options.ConfigurationExtensions.dll
+/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/Microsoft.AspNetCore.AzureAppServices.HostingStartup.dll
+/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/Microsoft.AspNetCore.AzureAppServicesIntegration.dll

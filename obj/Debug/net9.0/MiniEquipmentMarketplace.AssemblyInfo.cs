@@ -11,10 +11,11 @@ using System;
 using System.Reflection;
 
 [assembly: Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute("Bootstrap5")]
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("676015a6-3d36-40c6-b0c3-81cffa7e207b")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("MiniEquipmentMarketplace")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dac621c4fab2726a726c07a6f1b315cd91b4ebed")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+89b282f8e09bcca0ba9038d61b3e5885d32e704e")]
 [assembly: System.Reflection.AssemblyProductAttribute("MiniEquipmentMarketplace")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MiniEquipmentMarketplace")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

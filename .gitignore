@@ -1,26 +1,52 @@
-# .NET build folders
+# ========================
+# Build & runtime artifacts
+# ========================
 bin/
 obj/
-
-# User-specific files
-*.user
-*.userosscache
-*.suo
-*.vs/
-*.vscode/
-
-# Rider
-.idea/
-
-# Azure Functions local files
-local.settings.json
-
-# Logs
-*.log
-
-# Publish output
 publish/
 
-# Database files
+# ========================
+# Visual Studio / VS Code
+# ========================
+.vs/             # Visual Studio workspace
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vscode/         # VS Code settings
+
+# ========================
+# Rider
+# ========================
+.idea/
+
+# ========================
+# User secrets & local config
+# ========================
+secrets.json                 # user‑secrets file (outside project by default)
+appsettings.Development.json # local overrides
+launchSettings.json          # IIS Express / debug settings
+
+# ========================
+# Logs
+# ========================
+logs/
+*.log
+
+# ========================
+# Static web assets
+# ========================
+node_modules/                # if you ever pull in JS libs
+wwwroot/lib/
+
+# ========================
+# Database & tooling
+# ========================
 *.mdf
-*.ldfbin/
+*.ldf
+
+# ========================
+# OS files
+# ========================
+.DS_Store                    # macOS
+Thumbs.db                    # Windows

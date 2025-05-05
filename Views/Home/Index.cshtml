@@ -1,8 +1,544 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css" />
+
+<!-- Particles.js full-screen animation matching default demo -->
+<div id="particles-js"></div>
+
+<div class="container-fluid hero d-flex align-items-center">
+  <div class="row w-100">
+    <!-- Left: hero text & buttons -->
+    <div class="col-md-6 hero-content">
+      <h1 class="display-4 text-white">Equipment Marketplace</h1>
+      <p class="lead text-white">Welcome to Equipment Marketplace—your simple, secure online hub for buying and selling heavy machinery.</p>
+      <p class="text-white">Vendors create an account to showcase equipment with photos, clear descriptions, and pricing, while buyers browse and filter listings to find exactly what they need. Our team vets each vendor profile and keeps inventory up‑to‑date, so you can transact with confidence and ease—all in one streamlined platform.</p>
+
+      <div class="mb-4">
+        @if (User.Identity.IsAuthenticated)
+        {
+            <div class="action-buttons">
+                <a asp-controller="Equipment" asp-action="Index" class="btn btn-primary btn-lg action-btn" data-bs-toggle="tooltip" data-bs-placement="bottom" title="List and browse machinery equipment from various sellers">
+                    <i class="fas fa-tools"></i> Equipment
+                </a>
+                <a asp-controller="Vendors" asp-action="Index" class="btn btn-primary btn-lg action-btn" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Register as a vendor">
+                    <i class="fas fa-store"></i> Vendors
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="action-buttons">
+                <div class="dropdown">
+                    <button class="btn btn-primary btn-lg dropdown-toggle" type="button" id="loginDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                    <ul class="dropdown-menu animated-dropdown" aria-labelledby="loginDropdown">
+                        <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Login" asp-route-userType="Admin">
+                            <i class="fas fa-user-shield"></i> Login as Admin
+                        </a></li>
+                        <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Login" asp-route-userType="Vendor">
+                            <i class="fas fa-store"></i> Login as Vendor
+                        </a></li>
+                        <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Login" asp-route-userType="Shopper">
+                            <i class="fas fa-shopping-cart"></i> Login as Shopper
+                        </a></li>
+                    </ul>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-primary btn-lg dropdown-toggle" type="button" id="registerDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-plus"></i> Register
+                    </button>
+                    <ul class="dropdown-menu animated-dropdown" aria-labelledby="registerDropdown">
+                        <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Register" asp-route-userType="Vendor">
+                            <i class="fas fa-store"></i> Register as Vendor
+                        </a></li>
+                        <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Register" asp-route-userType="Shopper">
+                            <i class="fas fa-shopping-cart"></i> Register as Shopper
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        }
+      </div>
+    </div>
+
+    <!-- Right: tech-stack list -->
+    @if (!User.Identity.IsAuthenticated)
+    {
+        <div class="col-md-6 tech-stack-container">
+          <div class="retro-tv">
+            <div class="tv-antenna"></div>
+            <div class="tv-frame">
+              <div class="tv-screen">
+                <div class="tech-stack-viewport">
+                  <div class="tech-stack-wrapper">
+                    <ul class="tech-stack list-unstyled">
+                      <li><i class="devicon-dotnetcore-plain"></i> ASP.NET Core MVC (.NET 9 & C#)</li>
+                      <li><i class="devicon-entityframework-plain"></i> Entity Framework Core</li>
+                      <li><i class="devicon-microsoftsqlserver-plain"></i> SQL Server</li>
+                      <li><i class="devicon-docker-plain"></i> Docker</li>
+                      <li><i class="devicon-microsoftazure-plain"></i> Azure App Service & Azure SQL DB</li>
+                      <li><i class="devicon-dotnetcore-plain"></i> ASP.NET Core Identity</li>
+                      <li><i class="devicon-bootstrap-plain"></i> Bootstrap & jQuery</li>
+                      <li><i class="devicon-mailchimp-plain"></i> MailKit & SendGrid</li>
+                      <li><i class="devicon-github-original"></i> GitHub</li>
+                      <li><i class="devicon-visualstudio-plain"></i> Visual Studio</li>
+                      <li><i class="devicon-git-plain"></i> Git</li>
+                      <li><i class="devicon-html5-plain"></i> HTML5</li>
+                      <li><i class="devicon-css3-plain"></i> CSS3</li>
+                      <li><i class="devicon-javascript-plain"></i> JavaScript</li>
+                    </ul>
+                    <ul class="tech-stack list-unstyled">
+                      <li><i class="devicon-dotnetcore-plain"></i> ASP.NET Core MVC (.NET 9 & C#)</li>
+                      <li><i class="devicon-entityframework-plain"></i> Entity Framework Core</li>
+                      <li><i class="devicon-microsoftsqlserver-plain"></i> SQL Server</li>
+                      <li><i class="devicon-docker-plain"></i> Docker</li>
+                      <li><i class="devicon-microsoftazure-plain"></i> Azure App Service & Azure SQL DB</li>
+                      <li><i class="devicon-dotnetcore-plain"></i> ASP.NET Core Identity</li>
+                      <li><i class="devicon-bootstrap-plain"></i> Bootstrap & jQuery</li>
+                      <li><i class="devicon-mailchimp-plain"></i> MailKit & SendGrid</li>
+                      <li><i class="devicon-github-original"></i> GitHub</li>
+                      <li><i class="devicon-visualstudio-plain"></i> Visual Studio</li>
+                      <li><i class="devicon-git-plain"></i> Git</li>
+                      <li><i class="devicon-html5-plain"></i> HTML5</li>
+                      <li><i class="devicon-css3-plain"></i> CSS3</li>
+                      <li><i class="devicon-javascript-plain"></i> JavaScript</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="tv-leds">
+                <div class="tv-led power"></div>
+                <div class="tv-led standby"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+    }
+  </div>
 </div>
+
+@section Scripts {
+  <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+  <script src="https://kit.fontawesome.com/9ab3d85691.js" crossorigin="anonymous"></script>
+  <script>
+    /* Default particles.js configuration */
+    particlesJS('particles-js', {
+      particles: {
+        number: { value: 80, density: { enable: true, value_area: 800 } },
+        color: { value: '#ffffff' },
+        shape: {
+          type: 'circle',
+          stroke: { width: 0, color: '#000000' },
+          polygon: { nb_sides: 5 }
+        },
+        opacity: {
+          value: 0.5,
+          random: false,
+          anim: { enable: false, speed: 1, opacity_min: 0.1, sync: false }
+        },
+        size: {
+          value: 3,
+          random: true,
+          anim: { enable: false, speed: 40, size_min: 0.1, sync: false }
+        },
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: '#ffffff',
+          opacity: 0.4,
+          width: 1
+        },
+        move: {
+          enable: true,
+          speed: 6,
+          direction: 'none',
+          random: false,
+          straight: false,
+          out_mode: 'out',
+          bounce: false,
+          attract: { enable: false, rotateX: 600, rotateY: 1200 }
+        }
+      },
+      interactivity: {
+        detect_on: 'window',
+        events: {
+          onhover: { enable: true, mode: 'grab' },
+          onclick: { enable: true, mode: 'push' },
+          resize: true
+        },
+        modes: {
+          grab: { distance: 140, line_linked: { opacity: 1 } },
+          bubble: { distance: 400, size: 40, duration: 2, opacity: 8, speed: 3 },
+          repulse: { distance: 200, duration: 0.4 },
+          push: { particles_nb: 4 },
+          remove: { particles_nb: 2 }
+        }
+      },
+      retina_detect: true
+    });
+
+    // Initialize dropdowns with animation
+    document.querySelectorAll('.dropdown-toggle').forEach(dropdown => {
+      dropdown.addEventListener('click', function() {
+        const menu = this.nextElementSibling;
+        menu.classList.add('show');
+      });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.matches('.dropdown-toggle')) {
+        document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+          menu.classList.remove('show');
+        });
+      }
+    });
+
+    // Initialize tooltips with custom options
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl, {
+        template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>'
+      });
+    });
+  </script>
+}
+
+<style>
+  /* Full‑screen particle background */
+  #particles-js {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background: @(User.Identity.IsAuthenticated ? "#4CAF50" : "#FF0000");
+  }
+
+  .hero {
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-content h1,
+  .hero-content p {
+    text-align: left;
+  }
+
+  .hero-content p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  /* Animated Dropdown Styles */
+  .animated-dropdown {
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transform-origin: top;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    opacity: 0;
+    transform: scaleY(0);
+    display: block;
+  }
+
+  .animated-dropdown.show {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  .dropdown-item {
+    color: #fff;
+    padding: 0.8rem 1.2rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .dropdown-item i {
+    width: 20px;
+    text-align: center;
+  }
+
+  .dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    transform: translateX(5px);
+  }
+
+  /* Enhanced Tooltip Styles */
+  .tooltip {
+    font-size: 1.1rem;
+  }
+
+  .tooltip-inner {
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #fff;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 300px;
+  }
+
+  /* Updated Retro TV Styles */
+  .retro-tv {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    position: relative;
+    perspective: 1000px;
+  }
+
+  .tv-frame {
+    background: linear-gradient(145deg, #2b2b2b, #1a1a1a);
+    border: 20px solid #1a1a1a;
+    border-radius: 20px;
+    box-shadow: 
+        0 0 20px rgba(0, 0, 0, 0.5),
+        inset 0 0 20px rgba(0, 0, 0, 0.5),
+        0 0 0 2px rgba(255, 255, 255, 0.1);
+    position: relative;
+    padding: 20px;
+    transform: rotateX(5deg);
+    transition: transform 0.3s ease;
+  }
+
+  .tv-frame:hover {
+    transform: rotateX(0deg);
+  }
+
+  .tv-screen {
+    background: #000;
+    padding: 20px;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4/3;
+    box-shadow: 
+        inset 0 0 20px rgba(0, 0, 0, 0.8),
+        0 0 10px rgba(0, 255, 0, 0.2);
+  }
+
+  .tv-screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      rgba(18, 16, 16, 0) 50%,
+      rgba(0, 0, 0, 0.25) 50%
+    );
+    background-size: 100% 4px;
+    z-index: 2;
+    pointer-events: none;
+    animation: scanline 8s linear infinite;
+  }
+
+  .tv-screen::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(18, 16, 16, 0.1);
+    animation: flicker 0.15s infinite;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .tv-antenna {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 60px;
+    background: linear-gradient(to bottom, #1a1a1a, #2b2b2b);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+  }
+
+  .tv-antenna::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: -8px;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle at center, #2b2b2b, #1a1a1a);
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+  }
+
+  .tv-leds {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+  }
+
+  .tv-led {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px currentColor;
+  }
+
+  .tv-led.power {
+    background: #00ff00;
+    color: #00ff00;
+    animation: pulse 2s infinite;
+  }
+
+  .tv-led.standby {
+    background: #ff0000;
+    color: #ff0000;
+  }
+
+  @@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+
+  @@keyframes flicker {
+    0% { opacity: 0.27861; }
+    5% { opacity: 0.34769; }
+    10% { opacity: 0.23604; }
+    15% { opacity: 0.90626; }
+    20% { opacity: 0.18128; }
+    25% { opacity: 0.83891; }
+    30% { opacity: 0.65583; }
+    35% { opacity: 0.67807; }
+    40% { opacity: 0.26559; }
+    45% { opacity: 0.84693; }
+    50% { opacity: 0.96019; }
+    55% { opacity: 0.08594; }
+    60% { opacity: 0.20313; }
+    65% { opacity: 0.71988; }
+    70% { opacity: 0.53455; }
+    75% { opacity: 0.37288; }
+    80% { opacity: 0.71428; }
+    85% { opacity: 0.70419; }
+    90% { opacity: 0.7003; }
+    95% { opacity: 0.36108; }
+    100% { opacity: 0.24387; }
+  }
+
+  @@keyframes scanline {
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(100%);
+    }
+  }
+
+  header, .navbar {
+    position: relative;
+    z-index: 10;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .action-btn {
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .action-btn:hover:not(.disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  }
+
+  .action-btn i {
+    margin-right: 0.5rem;
+  }
+
+  .tech-stack-viewport {
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .tech-stack-wrapper {
+    animation: scroll-vertical 20s linear infinite;
+  }
+
+  .tech-stack {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tech-stack li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    color: #00ff00;
+    font-size: 1.2rem;
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+    animation: textFlicker 0.5s infinite;
+  }
+
+  .tech-stack li i {
+    font-size: 2rem;
+    margin-right: 0.75rem;
+    color: #00ff00;
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+    animation: textFlicker 0.5s infinite;
+  }
+
+  @@keyframes scroll-vertical {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(-50%);
+    }
+  }
+
+  @@keyframes textFlicker {
+    0% { opacity: 1; }
+    5% { opacity: 0.8; }
+    10% { opacity: 1; }
+    15% { opacity: 0.9; }
+    20% { opacity: 1; }
+    25% { opacity: 0.7; }
+    30% { opacity: 1; }
+    35% { opacity: 0.8; }
+    40% { opacity: 1; }
+    45% { opacity: 0.9; }
+    50% { opacity: 1; }
+    55% { opacity: 0.8; }
+    60% { opacity: 1; }
+    65% { opacity: 0.7; }
+    70% { opacity: 1; }
+    75% { opacity: 0.8; }
+    80% { opacity: 1; }
+    85% { opacity: 0.9; }
+    90% { opacity: 1; }
+    95% { opacity: 0.8; }
+    100% { opacity: 1; }
+  }
+</style>

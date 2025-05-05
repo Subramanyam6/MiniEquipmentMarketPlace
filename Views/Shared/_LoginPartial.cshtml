@@ -7,21 +7,39 @@
 @if (SignInManager.IsSignedIn(User))
 {
     <li class="nav-item">
-        <a id="manage" class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @UserManager.GetUserName(User)!</a>
+        <span class="nav-link text-light user-greeting">Hello <span class="user-name">@UserManager.GetUserName(User)</span></span>
     </li>
     <li class="nav-item">
-        <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button id="logout" type="submit" class="nav-link btn btn-link text-dark border-0">Logout</button>
+        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post" >
+            <button type="submit" class="nav-link btn btn-link text-light fancy-nav-link">
+                <span class="fancy-nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+                <span class="fancy-nav-text">Logout</span>
+            </button>
         </form>
     </li>
 }
-else
-{
-    <li class="nav-item">
-        <a class="nav-link text-dark" id="register" asp-area="Identity" asp-page="/Account/Register">Register</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" id="login" asp-area="Identity" asp-page="/Account/Login">Login</a>
-    </li>
-}
 </ul>
+
+<style>
+    .user-greeting {
+        display: flex;
+        align-items: center;
+    }
+    
+    .user-name {
+        font-weight: 600;
+        margin-left: 5px;
+        background: linear-gradient(45deg, #f06, #9f6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradient 3s ease infinite;
+        background-size: 200% 200%;
+    }
+    
+    @@keyframes gradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+</style>

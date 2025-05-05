@@ -1,42 +1,47 @@
 @model MiniEquipmentMarketplace.Models.Equipment
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Equipment Details";
+    Layout = "_CrudLayout";
 }
 
-<h1>Details</h1>
-
-<div>
-    <h4>Equipment</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Title)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Price)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Vendor)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Vendor!.VendorId)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.EquipmentId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div class="card">
+    <div class="card-body">
+        <h1 class="card-title">Equipment Details</h1>
+        <hr />
+        <dl class="row">
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.Title)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.Title)
+            </dd>
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.Description)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.Description)
+            </dd>
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.Price)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.Price)
+            </dd>
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.Vendor)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => model.Vendor.Name)
+            </dd>
+        </dl>
+        <div class="mt-4">
+            <a asp-action="Edit" asp-route-id="@Model?.EquipmentId" class="btn btn-primary btn-action">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a asp-action="Index" class="btn btn-secondary btn-action">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
 </div>

@@ -7,6 +7,9 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.AzureAppServices;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using MiniEquipmentMarketplace.Services;
+using MiniEquipmentMarketplace.Areas.Identity.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +44,11 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
   .AddRoles<IdentityRole>()
   .AddEntityFrameworkStores<AppDbContext>();
 builder.Services.AddRazorPages();  // for Identity UI
+
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+
 
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 builder.Logging.ClearProviders();
@@ -102,7 +110,7 @@ using (var scope = app.Services.CreateScope())
 using (var scope = app.Services.CreateScope())
 {
     var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    foreach (var role in new[] { "Admin", "Vendor" })
+    foreach (var role in new[] { "Admin", "Vendor", "Shopper" })
         if (!await roleMgr.RoleExistsAsync(role))
             await roleMgr.CreateAsync(new IdentityRole(role));
 

@@ -56,6 +56,13 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
+        [BindProperty]
+        public string UserType { get; set; }
+
+        /// <summary>
+        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public string ReturnUrl { get; set; }
 
         /// <summary>
@@ -99,16 +106,19 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
             public string ConfirmPassword { get; set; }
         }
 
-
-        public async Task OnGetAsync(string returnUrl = null)
+        public async Task OnGetAsync(string returnUrl = null, string userType = null)
         {
             ReturnUrl = returnUrl;
+            UserType = userType;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
+            
+            // UserType is now bound from the form
+
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
@@ -122,6 +132,18 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User created a new account with password.");
 
+                    // Add user to role with validation
+                    if (!string.IsNullOrWhiteSpace(UserType))
+                    {
+                        await _userManager.AddToRoleAsync(user, UserType);
+                    }
+                    else
+                    {
+                        // Default to Shopper role if no role is specified
+                        await _userManager.AddToRoleAsync(user, "Shopper");
+                        UserType = "Shopper"; // Update UserType for the welcome email
+                    }
+
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -131,8 +153,16 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
                         values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
 
+                    // Send confirmation email
                     await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
                         $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                    // Send welcome email
+                    await SendWelcomeEmailAsync(Input.Email, UserType);
+
+                    // Set success message
+                    TempData["StatusMessage"] = "Registration successful!";
+                    TempData["StatusType"] = "alert-success";
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
@@ -152,6 +182,50 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
 
             // If we got this far, something failed, redisplay form
             return Page();
+        }
+
+        private async Task SendWelcomeEmailAsync(string email, string userType)
+        {
+            var subject = "Welcome to Equipment Marketplace";
+            var htmlBody = $@"
+                <html>
+                <head>
+                    <style>
+                        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                        .header {{ background-color: #1a472a; color: white; padding: 10px 20px; text-align: center; }}
+                        .content {{ padding: 20px; background-color: #f9f9f9; }}
+                        .btn {{ display: inline-block; background-color: #1a472a; color: white; padding: 10px 20px; 
+                                text-decoration: none; border-radius: 5px; margin-top: 20px; }}
+                        .footer {{ margin-top: 20px; font-size: 12px; color: #666; text-align: center; }}
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <div class='header'>
+                            <h1>Welcome to Equipment Marketplace!</h1>
+                        </div>
+                        <div class='content'>
+                            <p>Thank you for registering as a <strong>{userType}</strong>.</p>
+                            <p>Your account has been created successfully and you can now:</p>
+                            <ul>
+                                {(userType == "Vendor" ? "<li>List your equipment for sale</li><li>Manage your inventory</li>" : "")}
+                                {(userType == "Shopper" ? "<li>Browse available equipment</li><li>Request quotes from vendors</li>" : "")}
+                                {(userType == "Admin" ? "<li>Manage all equipment listings</li><li>Administer user accounts</li>" : "")}
+                                <li>Update your profile settings</li>
+                                <li>Contact our support team if you need assistance</li>
+                            </ul>
+                            <p>We're excited to have you on board!</p>
+                            <a href='{Url.Action("Index", "Home", new { }, Request.Scheme)}' class='btn'>Start Exploring</a>
+                        </div>
+                        <div class='footer'>
+                            <p>© {DateTime.Now.Year} Equipment Marketplace. All rights reserved.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>";
+
+            await _emailSender.SendEmailAsync(email, subject, htmlBody);
         }
 
         private IdentityUser CreateUser()

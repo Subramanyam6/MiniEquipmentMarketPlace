@@ -27,6 +27,11 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
         {
             await _signInManager.SignOutAsync();
             _logger.LogInformation("User logged out.");
+
+            // Set logout message
+            TempData["StatusMessage"] = "Successfully logged out!";
+            TempData["StatusType"] = "alert-danger";
+
             if (returnUrl != null)
             {
                 return LocalRedirect(returnUrl);

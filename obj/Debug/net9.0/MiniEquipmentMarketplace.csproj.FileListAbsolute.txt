@@ -394,8 +394,6 @@
 /Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/obj/Debug/net9.0/compressed/umfhhwlcnj-muycvpuwrr.gz
 /Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/obj/Debug/net9.0/compressed/a247s1gdcn-87fc7y1x7t.gz
 /Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/obj/Debug/net9.0/compressed/gl93i02am4-mlv21k5csn.gz
-/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/obj/Debug/net9.0/compressed/ekpeqaudsz-a43uchunxl.gz
-/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/obj/Debug/net9.0/compressed/rqt9551olj-a43uchunxl.gz
 /Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/obj/Debug/net9.0/staticwebassets.build.json
 /Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/obj/Debug/net9.0/staticwebassets.development.json
 /Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/obj/Debug/net9.0/staticwebassets.build.endpoints.json
@@ -423,3 +421,8 @@
 /Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/Microsoft.Extensions.Options.ConfigurationExtensions.dll
 /Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/Microsoft.AspNetCore.AzureAppServices.HostingStartup.dll
 /Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/Microsoft.AspNetCore.AzureAppServicesIntegration.dll
+/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/obj/Debug/net9.0/compressed/ekpeqaudsz-a43uchunxl.gz
+/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/obj/Debug/net9.0/compressed/rqt9551olj-a43uchunxl.gz
+/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/BouncyCastle.Cryptography.dll
+/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/MailKit.dll
+/Users/subramanyam6666/Documents/Learning_SoftwareEngineering/MiniEquipmentMarketplace/bin/Debug/net9.0/MimeKit.dll

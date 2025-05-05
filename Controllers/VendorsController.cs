@@ -8,26 +8,38 @@ using Microsoft.EntityFrameworkCore;
 using MiniEquipmentMarketplace.Data;
 using MiniEquipmentMarketplace.Models;
 using Microsoft.AspNetCore.Authorization;
-
-
+using Microsoft.AspNetCore.Identity;
 
 namespace MiniEquipmentMarketplace.Controllers
 {
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Vendor")]
     public class VendorsController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public VendorsController(AppDbContext context)
+        public VendorsController(AppDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Vendors
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Vendors.ToListAsync());
+            // Remove user with specific email if exists
+            var targetEmail = "subramanyam.duggirala@gmail.com";
+            var userToRemove = await _userManager.FindByEmailAsync(targetEmail);
+            
+            if (userToRemove != null)
+            {
+                await _userManager.DeleteAsync(userToRemove);
+            }
+            
+            return _context.Vendors != null ? 
+                View(await _context.Vendors.ToListAsync()) :
+                Problem("Entity set 'ApplicationDbContext.Vendors' is null.");
         }
 
         // GET: Vendors/Details/5

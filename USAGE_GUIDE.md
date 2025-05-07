@@ -1,3 +1,11 @@
+# LINK TO THE CODE:
+https://github.com/Subramanyam6/MiniEquipmentMarketPlace
+
+# Use the following admin credentials, or feel free to create your own account. Real-email id is not required.
+
+Admin username = admin@demo.com (this is a dummy email. So you will not receive any emails for this username. Registering with a real email-id enables that option)
+Admin password = P@ssw0rd!
+
 # Equipment Marketplace: Simple User Guide
 
 Below are 10 simple steps to navigate and use the Equipment Marketplace website:

@@ -36,7 +36,14 @@ builder.Services.AddSwaggerGen(c =>
 
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), 
+        sqlServerOptionsAction: sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(30),
+                errorNumbersToAdd: null);
+        }));
 
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => 
@@ -49,6 +56,8 @@ builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
+// Add HttpContextAccessor for accessing the HttpContext in views
+builder.Services.AddHttpContextAccessor();
 
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 builder.Logging.ClearProviders();
@@ -86,43 +95,22 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
-// Seed sample data
+// Seed the database using the DbInitializer
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-
-    if (!db.Vendors.Any())
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    
+    try
     {
-        var acme = new Vendor { Name = "Acme Corp", Email = "info@acme.com" };
-        var global = new Vendor { Name = "Global Equip", Email = "sales@global.com" };
-
-        db.Vendors.AddRange(acme, global);
-        db.Equipment.AddRange(
-            new Equipment { Title = "Bulldozer", Description = "Heavy duty", Price = 150000m, Vendor = acme },
-            new Equipment { Title = "Excavator", Description = "Hydraulic arm",    Price = 200000m, Vendor = global }
-        );
-        db.SaveChanges();
+        logger.LogInformation("Initializing database with DbInitializer");
+        await DbInitializer.Initialize(services);
+        logger.LogInformation("Database initialization completed successfully");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while initializing the database.");
     }
 }
-
-// Seed roles and default admin user
-using (var scope = app.Services.CreateScope())
-{
-    var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    foreach (var role in new[] { "Admin", "Vendor", "Shopper" })
-        if (!await roleMgr.RoleExistsAsync(role))
-            await roleMgr.CreateAsync(new IdentityRole(role));
-
-    var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-    const string adminEmail = "admin@demo.com", adminPass = "P@ssw0rd!";
-    if (await userMgr.FindByEmailAsync(adminEmail) is null)
-    {
-        var admin = new IdentityUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
-        await userMgr.CreateAsync(admin, adminPass);
-        await userMgr.AddToRoleAsync(admin, "Admin");
-    }
-}
-
 
 app.Run();

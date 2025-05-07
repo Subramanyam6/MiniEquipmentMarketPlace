@@ -1,5 +1,12 @@
 @model IEnumerable<MiniEquipmentMarketplace.Models.Equipment>
 @using Microsoft.AspNetCore.Mvc.Rendering
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject UserManager<IdentityUser> UserManager
+@inject SignInManager<IdentityUser> SignInManager
+@using MiniEquipmentMarketplace.Data
+@inject AppDbContext Context
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 
 @{
     ViewData["Title"] = "Equipment";
@@ -7,7 +14,26 @@
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
     var action = ViewContext.RouteData.Values["action"]?.ToString();
     var area = ViewContext.RouteData.Values["area"]?.ToString();
-    var path = Context.Request.Path;
+    var path = HttpContextAccessor.HttpContext.Request.Path;
+    
+    var isShopper = User.IsInRole("Shopper") && !User.IsInRole("Admin") && !User.IsInRole("Vendor");
+    var isVendor = User.IsInRole("Vendor") && !User.IsInRole("Admin");
+    var isAdmin = User.IsInRole("Admin");
+    
+    // For vendors, get their associated vendor id
+    int? currentVendorId = null;
+    if (isVendor)
+    {
+        var currentUser = await UserManager.GetUserAsync(User);
+        if (currentUser != null)
+        {
+            var vendor = await Context.Vendors.FirstOrDefaultAsync(v => v.Email == currentUser.Email);
+            if (vendor != null)
+            {
+                currentVendorId = vendor.VendorId;
+            }
+        }
+    }
 }
 
 
@@ -15,9 +41,18 @@
     <h1 class="display-4 mb-4 text-light">Equipment</h1>
 
     <div class="action-bar mb-4">
-        <a asp-action="Create" class="btn btn-primary btn-lg action-btn">
-            <i class="fas fa-plus-circle"></i> Create New
-        </a>
+        @if (isShopper)
+        {
+            <button class="btn btn-secondary btn-lg action-btn disabled" disabled>
+                <i class="fas fa-plus-circle"></i> Create New
+            </button>
+        }
+        else
+        {
+            <a asp-action="Create" class="btn btn-primary btn-lg action-btn">
+                <i class="fas fa-plus-circle"></i> Create New
+            </a>
+        }
     </div>
 
     <div class="card mb-4">
@@ -35,43 +70,70 @@
         </div>
     </div>
 
-    <div id="equipmentTableWrapper" class="card">
-        <div class="card-body">
-            <table id="equipmentTable" class="table table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>@Html.DisplayNameFor(model => model.Title)</th>
-                        <th>@Html.DisplayNameFor(model => model.Description)</th>
-                        <th>@Html.DisplayNameFor(model => model.Price)</th>
-                        <th>@Html.DisplayNameFor(model => model.Vendor)</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model) {
+    <div id="equipmentTableWrapper" class="card mb-4">
+        <div class="card-body table-container">
+            <div class="table-responsive">
+                <table id="equipmentTable" class="table table-hover">
+                    <thead class="table-dark">
                         <tr>
-                            <td>@Html.DisplayFor(modelItem => item.Title)</td>
-                            <td>@Html.DisplayFor(modelItem => item.Description)</td>
-                            <td>@Html.DisplayFor(modelItem => item.Price)</td>
-                            <td>@Html.DisplayFor(modelItem => item.Vendor!.Name)</td>
-                            <td class="action-buttons">
-                                <a asp-action="Edit" asp-route-id="@item.EquipmentId" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-edit"></i> Edit
-                                </a>
-                                <a asp-action="Details" asp-route-id="@item.EquipmentId" class="btn btn-sm btn-outline-info">
-                                    <i class="fas fa-info-circle"></i> Details
-                                </a>
-                                <a asp-action="Delete" asp-route-id="@item.EquipmentId" class="btn btn-sm btn-outline-danger">
-                                    <i class="fas fa-trash"></i> Delete
-                                </a>
-                                <button class="btn btn-sm btn-success request-quote" data-id="@item.EquipmentId" data-title="@item.Title" data-price="@item.Price">
-                                    <i class="fas fa-file-invoice-dollar"></i> Request Quote
-                                </button>
-                            </td>
+                            <th>@Html.DisplayNameFor(model => model.Title)</th>
+                            <th>@Html.DisplayNameFor(model => model.Description)</th>
+                            <th>@Html.DisplayNameFor(model => model.Price)</th>
+                            <th>@Html.DisplayNameFor(model => model.Vendor)</th>
+                            <th>Actions</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model) {
+                            var canEdit = isAdmin || (isVendor && currentVendorId == item.VendorId);
+                            <tr>
+                                <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Description)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Price)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Vendor!.Name)</td>
+                                <td class="action-buttons">
+                                    @if (isShopper)
+                                    {
+                                        <button class="btn btn-sm btn-outline-secondary disabled" disabled>
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                    }
+                                    else if (canEdit)
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@item.EquipmentId" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-sm btn-outline-danger disabled" disabled title="You can only edit equipment from your vendor">
+                                            <i class="fas fa-lock"></i> No Access
+                                        </button>
+                                    }
+                                    <a asp-action="Details" asp-route-id="@item.EquipmentId" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-info-circle"></i> Details
+                                    </a>
+                                    @if (canEdit || isAdmin)
+                                    {
+                                        <a asp-action="Delete" asp-route-id="@item.EquipmentId" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-sm btn-outline-danger disabled" disabled title="You can only delete equipment from your vendor">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    }
+                                    <button class="btn btn-sm btn-success request-quote" data-id="@item.EquipmentId" data-title="@item.Title" data-price="@item.Price">
+                                        <i class="fas fa-file-invoice-dollar"></i> Request Quote
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -83,7 +145,39 @@
             // helper: rebuild table rows
             function renderTable(data) {
                 const tbody = $('#equipmentTable tbody').empty();
+                const isShopper = @Json.Serialize(isShopper);
+                const isVendor = @Json.Serialize(isVendor);
+                const isAdmin = @Json.Serialize(isAdmin);
+                const currentVendorId = @Json.Serialize(currentVendorId);
+                
                 data.forEach(item => {
+                    let editButton, deleteButton;
+                    const canEdit = isAdmin || (isVendor && currentVendorId == item.vendorId);
+                    
+                    if (isShopper) {
+                        editButton = `<button class="btn btn-sm btn-outline-secondary disabled" disabled>
+                                        <i class="fas fa-edit"></i> Edit
+                                     </button>`;
+                    } else if (canEdit) {
+                        editButton = `<a href="/Equipment/Edit/${item.equipmentId}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i> Edit
+                                     </a>`;
+                    } else {
+                        editButton = `<button class="btn btn-sm btn-outline-danger disabled" disabled title="You can only edit equipment from your vendor">
+                                        <i class="fas fa-lock"></i> No Access
+                                     </button>`;
+                    }
+                    
+                    if (canEdit || isAdmin) {
+                        deleteButton = `<a href="/Equipment/Delete/${item.equipmentId}" class="btn btn-sm btn-outline-danger">
+                                          <i class="fas fa-trash"></i> Delete
+                                       </a>`;
+                    } else {
+                        deleteButton = `<button class="btn btn-sm btn-outline-danger disabled" disabled title="You can only delete equipment from your vendor">
+                                          <i class="fas fa-trash"></i> Delete
+                                       </button>`;
+                    }
+                    
                     tbody.append(`
                         <tr>
                             <td>${item.title}</td>
@@ -91,15 +185,11 @@
                             <td>${item.price}</td>
                             <td>${item.vendor.name}</td>
                             <td class="action-buttons">
-                                <a href="/Equipment/Edit/${item.equipmentId}" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-edit"></i> Edit
-                                </a>
+                                ${editButton}
                                 <a href="/Equipment/Details/${item.equipmentId}" class="btn btn-sm btn-outline-info">
                                     <i class="fas fa-info-circle"></i> Details
                                 </a>
-                                <a href="/Equipment/Delete/${item.equipmentId}" class="btn btn-sm btn-outline-danger">
-                                    <i class="fas fa-trash"></i> Delete
-                                </a>
+                                ${deleteButton}
                                 <button class="btn btn-sm btn-success request-quote" data-id="${item.equipmentId}" data-title="${item.title}" data-price="${item.price}">
                                     <i class="fas fa-file-invoice-dollar"></i> Request Quote
                                 </button>
@@ -252,5 +342,37 @@
     /* Modal improvements */
     .modal-backdrop.show {
         opacity: 0.5;
+    }
+
+    .table-container {
+        max-height: 60vh;
+        overflow-y: auto;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        position: relative;
+    }
+    
+    .table-container::after {
+        content: '';
+        display: block;
+        height: 10px;
+        width: 100%;
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.05), transparent);
+        pointer-events: none;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .table thead {
+        border-radius: 10px 10px 0 0;
+        overflow: hidden;
+        position: sticky;
+        top: 0;
+        z-index: 10;
     }
 </style>

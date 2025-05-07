@@ -1,7 +1,27 @@
 @model IEnumerable<MiniEquipmentMarketplace.Models.Vendor>
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject UserManager<IdentityUser> UserManager
+@inject SignInManager<IdentityUser> SignInManager
+@using MiniEquipmentMarketplace.Data
+@inject AppDbContext Context
 
 @{
     ViewData["Title"] = "Vendors";
+    
+    var isVendor = User.IsInRole("Vendor") && !User.IsInRole("Admin");
+    var isAdmin = User.IsInRole("Admin");
+    
+    // Get current user's email
+    string currentUserEmail = null;
+    if (isVendor)
+    {
+        var currentUser = await UserManager.GetUserAsync(User);
+        if (currentUser != null)
+        {
+            currentUserEmail = currentUser.Email;
+        }
+    }
 }
 
 <div class="container py-4">
@@ -13,36 +33,51 @@
         </a>
     </div>
 
-    <div class="card">
-        <div class="card-body">
-            <table class="table table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>@Html.DisplayNameFor(model => model.Name)</th>
-                        <th>@Html.DisplayNameFor(model => model.Email)</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model) {
+    <div class="card mb-4">
+        <div class="card-body table-container">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
                         <tr>
-                            <td>@Html.DisplayFor(modelItem => item.Name)</td>
-                            <td>@Html.DisplayFor(modelItem => item.Email)</td>
-                            <td class="action-buttons">
-                                <a asp-action="Edit" asp-route-id="@item.VendorId" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-edit"></i> Edit
-                                </a>
-                                <a asp-action="Details" asp-route-id="@item.VendorId" class="btn btn-sm btn-outline-info">
-                                    <i class="fas fa-info-circle"></i> Details
-                                </a>
-                                <a asp-action="Delete" asp-route-id="@item.VendorId" class="btn btn-sm btn-outline-danger">
-                                    <i class="fas fa-trash"></i> Delete
-                                </a>
-                            </td>
+                            <th>@Html.DisplayNameFor(model => model.Name)</th>
+                            <th>@Html.DisplayNameFor(model => model.Email)</th>
+                            <th>Actions</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model) {
+                            var canEdit = isAdmin || (isVendor && item.Email == currentUserEmail);
+                            <tr>
+                                <td>@Html.DisplayFor(modelItem => item.Name)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Email)</td>
+                                <td class="action-buttons">
+                                    @if (canEdit)
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@item.VendorId" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                    }
+                                    else 
+                                    {
+                                        <button class="btn btn-sm btn-outline-danger disabled" disabled title="You can only edit your own vendor information">
+                                            <i class="fas fa-lock"></i> No Access
+                                        </button>
+                                    }
+                                    <a asp-action="Details" asp-route-id="@item.VendorId" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-info-circle"></i> Details
+                                    </a>
+                                    @if (isAdmin)
+                                    {
+                                        <a asp-action="Delete" asp-route-id="@item.VendorId" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -60,6 +95,30 @@
         color: #212529;
     }
 
+    .table-container {
+        max-height: 60vh;
+        overflow-y: auto;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        position: relative;
+    }
+    
+    .table-container::after {
+        content: '';
+        display: block;
+        height: 10px;
+        width: 100%;
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.05), transparent);
+        pointer-events: none;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
     .table {
         margin-bottom: 0;
     }
@@ -71,6 +130,9 @@
     .table thead {
         border-radius: 10px 10px 0 0;
         overflow: hidden;
+        position: sticky;
+        top: 0;
+        z-index: 10;
     }
 
     .action-buttons {

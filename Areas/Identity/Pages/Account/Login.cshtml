@@ -35,7 +35,7 @@
                         </div>
                         <div class="mt-3">
                             <p>
-                                <a id="forgot-password" asp-page="./ForgotPassword">Forgot your password?</a>
+                                <a id="forgot-password" asp-page="./ForgotPassword" asp-route-userType="@Model.UserType">Forgot your password?</a>
                             </p>
                             <p>
                                 <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" asp-route-userType="@Model.UserType">Register as a new user</a>

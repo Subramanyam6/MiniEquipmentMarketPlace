@@ -38,7 +38,7 @@ namespace MiniEquipmentMarketplace.Controllers
             }
             
             return _context.Vendors != null ? 
-                View(await _context.Vendors.ToListAsync()) :
+                View(await _context.Vendors.OrderByDescending(v => v.CreatedAt).ToListAsync()) :
                 Problem("Entity set 'ApplicationDbContext.Vendors' is null.");
         }
 
@@ -71,10 +71,11 @@ namespace MiniEquipmentMarketplace.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("VendorId,Name,Email")] Vendor vendor)
+        public async Task<IActionResult> Create([Bind("VendorId,Name,Email,CreatedAt")] Vendor vendor)
         {
             if (ModelState.IsValid)
             {
+                vendor.CreatedAt = DateTime.UtcNow; // Ensure this is always set to current time
                 _context.Add(vendor);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -95,6 +96,22 @@ namespace MiniEquipmentMarketplace.Controllers
             {
                 return NotFound();
             }
+            
+            // Check if the user is a vendor but not an admin
+            if (User.IsInRole("Vendor") && !User.IsInRole("Admin"))
+            {
+                // Get the current user
+                var user = await _userManager.GetUserAsync(User);
+                
+                // Check if the vendor email matches user email
+                if (user != null && vendor.Email != user.Email)
+                {
+                    TempData["StatusMessage"] = "You don't have permission to edit vendor information that doesn't belong to you.";
+                    TempData["StatusType"] = "alert-danger";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+            
             return View(vendor);
         }
 
@@ -109,11 +126,42 @@ namespace MiniEquipmentMarketplace.Controllers
             {
                 return NotFound();
             }
+            
+            // Check if the user is a vendor but not an admin
+            if (User.IsInRole("Vendor") && !User.IsInRole("Admin"))
+            {
+                // Get the current user
+                var user = await _userManager.GetUserAsync(User);
+                
+                // Get the original vendor to check email
+                var originalVendor = await _context.Vendors.FindAsync(id);
+                
+                // Check if the vendor email matches user email
+                if (user != null && originalVendor != null && originalVendor.Email != user.Email)
+                {
+                    TempData["StatusMessage"] = "You don't have permission to edit vendor information that doesn't belong to you.";
+                    TempData["StatusType"] = "alert-danger";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    // Get the existing entity to preserve CreatedAt
+                    var existingVendor = await _context.Vendors.AsNoTracking()
+                        .FirstOrDefaultAsync(v => v.VendorId == id);
+                    
+                    if (existingVendor != null)
+                    {
+                        vendor.CreatedAt = existingVendor.CreatedAt;
+                    }
+                    else
+                    {
+                        vendor.CreatedAt = DateTime.UtcNow;
+                    }
+                    
                     _context.Update(vendor);
                     await _context.SaveChangesAsync();
                 }

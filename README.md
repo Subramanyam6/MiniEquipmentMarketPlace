@@ -1,93 +1,130 @@
 # Mini Equipment Marketplace
 
-A web application for an equipment marketplace built with ASP.NET Core MVC.
+A modern web application for buying and selling heavy machinery and equipment built with ASP.NET Core MVC.
 
-## Database Migration and Deployment Guide
+![Equipment Marketplace Screenshot](screenshots/marketplace.png)
 
-This guide explains how to preserve your database data when pushing to GitHub and deploying to Azure.
+## Overview
 
-### Option 1: Export SQL Data and Use the SQL Script
+Mini Equipment Marketplace is a full-featured platform that connects equipment vendors with potential buyers in a secure, user-friendly environment. The application showcases modern web development practices and implements a responsive, visually engaging user interface.
 
-1. Export your current database data:
-   - Use SQL Server Management Studio (SSMS) or Azure Data Studio
-   - Connect to your local database
-   - Right-click on your database and select "Tasks" > "Generate Scripts"
-   - Follow the wizard, make sure to select "Schema and data" when asked what to script
-   - Save the script to your project folder (e.g., as `DatabaseExport.sql`)
+## Key Features
 
-   Alternatively, you can execute the query in `Data/SeedData.sql` to generate INSERT statements for your data.
+- **User Role Management**: Support for multiple user roles (Admin, Vendor, Shopper) with role-specific functionalities and access control
+- **Equipment Listings**: Vendors can create, edit, and manage equipment listings with images, descriptions, and pricing
+- **User Authentication**: Secure authentication system with email verification and password reset functionality
+- **Responsive Design**: Mobile-friendly interface that works across devices of all sizes
+- **Real-time Visual Feedback**: Interactive UI elements with animations and transitions for improved user experience
+- **Data Persistence**: SQL Server database with Entity Framework Core for reliable data storage and retrieval
+- **Secure Communication**: Email notifications for account activities and transaction updates
 
-2. Push to GitHub:
-   - Commit all your changes including the SQL script
-   - Push to your GitHub repository
+## Technology Stack
 
-3. Deploy to Azure:
-   - Deploy your application to Azure App Service
-   - Connect to your Azure SQL Database
-   - Run the SQL script to populate the database
+- **Backend**:
+  - ASP.NET Core MVC (.NET 9 & C#)
+  - Entity Framework Core
+  - ASP.NET Core Identity
+  - SQL Server
 
-### Option 2: Use DbInitializer for Programmatic Seeding
+- **Frontend**:
+  - HTML5/CSS3
+  - JavaScript
+  - Bootstrap
+  - jQuery
+  - Particles.js
+  - Font Awesome
 
-1. Update the DbInitializer.cs:
-   - Open `Data/DbInitializer.cs`
-   - Replace the sample data with your actual data in the vendors and equipment arrays
-   - For more complex data, export it from your database to SQL (as in Option 1) and write the equivalent C# code
+- **DevOps & Infrastructure**:
+  - Docker
+  - Azure App Service & Azure SQL DB
+  - Git/GitHub
 
-2. Push to GitHub:
-   - Commit all your changes
-   - Push to your GitHub repository
+## Architecture
 
-3. Deploy to Azure:
-   - Deploy your application to Azure App Service
-   - The DbInitializer will automatically run on application startup
-   - If the database is empty, it will be populated with your data
+The application follows the MVC (Model-View-Controller) architectural pattern:
 
-### Option 3: Use Azure SQL Database Migrations
+- **Models**: Represent the data structures and business logic
+- **Views**: Responsible for rendering the UI using Razor syntax
+- **Controllers**: Handle user requests, process data, and return responses
 
-1. Ensure your local database schema matches your model:
+The project is structured to separate concerns and promote maintainability while keeping the codebase clean and organized.
+
+## Getting Started
+
+### Prerequisites
+
+- .NET 9 SDK
+- SQL Server (or SQL Server Express)
+- Visual Studio 2022 or Visual Studio Code
+
+### Installation
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/Subramanyam6/MiniEquipmentMarketplace.git
+   ```
+
+2. Navigate to the project directory:
+   ```
+   cd MiniEquipmentMarketplace
+   ```
+
+3. Restore dependencies:
+   ```
+   dotnet restore
+   ```
+
+4. Update the database connection string in `appsettings.json` to point to your SQL Server instance.
+
+5. Apply database migrations:
    ```
    dotnet ef database update
    ```
 
-2. Publish your database to Azure SQL:
-   - Use SQL Server Management Studio
-   - Right-click on your local database
-   - Select "Tasks" > "Deploy Database to Microsoft Azure SQL Database"
-   - Follow the wizard to deploy your database with data
+6. Run the application:
+   ```
+   dotnet run
+   ```
 
-3. Update your Azure App Service Connection String:
-   - In the Azure Portal, go to your App Service
-   - Navigate to Configuration > Connection Strings
-   - Update the connection string to match your Azure SQL Database
+7. Open your browser and navigate to `https://localhost:5001` or `http://localhost:5000`.
 
-## Useful Commands
+## Usage
 
-- Generate a SQL script for your database:
-  ```
-  sqlcmd -S YOUR_SERVER -d YOUR_DATABASE -U YOUR_USERNAME -P YOUR_PASSWORD -Q "SELECT * FROM YOUR_TABLE" -o output.sql
-  ```
+The application provides different functionalities based on user roles:
 
-- View database migration status:
-  ```
-  dotnet ef migrations list
-  ```
+- **Admin**: Can manage all equipment listings, vendors, and users
+- **Vendor**: Can create and manage their equipment listings
+- **Shopper**: Can browse and purchase equipment
 
-- Create a new migration:
-  ```
-  dotnet ef migrations add MigrationName
-  ```
+### Demo Accounts
 
-- Apply migrations:
-  ```
-  dotnet ef database update
-  ```
+For testing purposes, you can register new accounts or use these demo credentials:
 
-## Azure Deployment Checklist
+- **Admin**: admin@example.com / Password123!
+- **Vendor**: vendor@example.com / Password123!
+- **Shopper**: shopper@example.com / Password123!
 
-- [ ] Update connection strings in appsettings.json or Azure App Service settings
-- [ ] Set environment variables for sensitive information
-- [ ] Configure authentication settings
-- [ ] Setup HTTPS and SSL certificates
-- [ ] Set up monitoring and logging
-- [ ] Configure Azure SQL Database firewall rules
-- [ ] Test the application after deployment 
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Sandhills Global for the inspiration
+- All the open-source libraries and tools that made this project possible
+
+## Contact
+
+Bala Subramanyam - bduggirala2@huskers.unl.edu
+
+Project Link: [https://github.com/Subramanyam6/MiniEquipmentMarketplace](https://github.com/Subramanyam6/MiniEquipmentMarketplace) 

@@ -34,6 +34,9 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
         [BindProperty]
         public InputModel Input { get; set; }
 
+        [BindProperty]
+        public string UserType { get; set; }
+
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
@@ -55,14 +58,9 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
             {
                 var user = await _userManager.FindByEmailAsync(Input.Email);
                 
-                // Store the email in TempData for use in the confirmation page
-                TempData["ResetEmail"] = Input.Email;
+                // Store the user type for the confirmation page
+                TempData["UserType"] = UserType ?? Request.Form["userType"].ToString();
                 
-                // Skip the email check and confirmation for better UX
-                return RedirectToPage("./ForgotPasswordConfirmation");
-                
-                // Original code (commented out):
-                /*
                 if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
                 {
                     // Don't reveal that the user does not exist or is not confirmed
@@ -76,7 +74,7 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
                 var callbackUrl = Url.Page(
                     "/Account/ResetPassword",
                     pageHandler: null,
-                    values: new { area = "Identity", code },
+                    values: new { area = "Identity", code, userType = TempData["UserType"] },
                     protocol: Request.Scheme);
 
                 await _emailSender.SendEmailAsync(
@@ -85,7 +83,6 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
                     $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
                 return RedirectToPage("./ForgotPasswordConfirmation");
-                */
             }
 
             return Page();

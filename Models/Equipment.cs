@@ -8,5 +8,6 @@ namespace MiniEquipmentMarketplace.Models
         public decimal Price { get; set; }
         public int VendorId { get; set; }
         public Vendor? Vendor { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

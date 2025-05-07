@@ -136,6 +136,8 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
                     {
                         await _signInManager.SignOutAsync();
                         ModelState.AddModelError(string.Empty, "Invalid account type selected.");
+                        TempData["StatusMessage"] = "Invalid account type selected.";
+                        TempData["StatusType"] = "alert-danger";
                         return Page();
                     }
 

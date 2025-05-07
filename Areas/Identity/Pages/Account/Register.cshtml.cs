@@ -122,6 +122,36 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
+                // Check if user already exists
+                var existingUser = await _userManager.FindByEmailAsync(Input.Email);
+                
+                if (existingUser != null)
+                {
+                    // User exists, check if they're trying to register with a role they already have
+                    var userRoles = await _userManager.GetRolesAsync(existingUser);
+                    
+                    if (userRoles.Contains(UserType))
+                    {
+                        ModelState.AddModelError(string.Empty, $"You are already registered as a {UserType}.");
+                        return Page();
+                    }
+                    
+                    // Add the new role to the existing user
+                    await _userManager.AddToRoleAsync(existingUser, UserType);
+                    
+                    // Set success message
+                    TempData["StatusMessage"] = $"Your account has been updated to include {UserType} privileges!";
+                    TempData["StatusType"] = "alert-success";
+                    
+                    // Send welcome email for the new role
+                    await SendWelcomeEmailAsync(Input.Email, UserType);
+                    
+                    // Sign the user in with their existing account
+                    await _signInManager.SignInAsync(existingUser, isPersistent: false);
+                    return LocalRedirect(returnUrl);
+                }
+                
+                // Create new user if they don't exist
                 var user = CreateUser();
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);

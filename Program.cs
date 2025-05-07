@@ -95,22 +95,127 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
-// Seed the database using the DbInitializer
+// Seed sample data
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    var logger = services.GetRequiredService<ILogger<Program>>();
-    
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
-        logger.LogInformation("Initializing database with DbInitializer");
-        await DbInitializer.Initialize(services);
-        logger.LogInformation("Database initialization completed successfully");
+        logger.LogInformation("Ensuring database exists and is up to date");
+        
+        // For testing purposes, recreate the database each time
+        // Commenting out to preserve user data
+        /*
+        #if DEBUG
+        db.Database.EnsureDeleted();
+        logger.LogInformation("Database deleted for fresh seeding");
+        #endif
+        */
+        
+        // For Azure SQL, we need to ensure the database exists
+        // This is more reliable than just Migrate() for first deployment
+        if (app.Environment.IsProduction())
+        {
+            db.Database.EnsureCreated();
+        }
+        db.Database.Migrate();
+
+        logger.LogInformation("Database migration completed successfully. Checking for seed data.");
+        
+        if (!db.Vendors.Any())
+        {
+            logger.LogInformation("Seeding vendors and equipment data");
+            
+            // Create vendors
+            var acme = new Vendor { Name = "Acme Corp", Email = "info@acme.com" };
+            var global = new Vendor { Name = "Global Equip", Email = "sales@global.com" };
+            var caterpillar = new Vendor { Name = "Caterpillar Inc.", Email = "contact@caterpillar.com" };
+            var johnDeere = new Vendor { Name = "John Deere", Email = "support@johndeere.com" };
+            var komatsu = new Vendor { Name = "Komatsu Ltd", Email = "sales@komatsu.com" };
+            var volvo = new Vendor { Name = "Volvo Construction", Email = "info@volvo-ce.com" };
+            var hitachi = new Vendor { Name = "Hitachi Construction", Email = "service@hitachi-construction.com" };
+
+            db.Vendors.AddRange(acme, global, caterpillar, johnDeere, komatsu, volvo, hitachi);
+            
+            // Create equipment
+            db.Equipment.AddRange(
+                new Equipment { Title = "Bulldozer", Description = "Heavy duty earthmover with blade", Price = 150000m, Vendor = acme },
+                new Equipment { Title = "Excavator", Description = "Hydraulic arm with bucket attachment", Price = 200000m, Vendor = global },
+                new Equipment { Title = "Wheel Loader", Description = "Front-loading shovel machine", Price = 175000m, Vendor = caterpillar },
+                new Equipment { Title = "Backhoe", Description = "Digging machine with front shovel", Price = 120000m, Vendor = johnDeere },
+                new Equipment { Title = "Motor Grader", Description = "Road construction and maintenance", Price = 220000m, Vendor = komatsu },
+                new Equipment { Title = "Dump Truck", Description = "Large-capacity material transport", Price = 180000m, Vendor = volvo },
+                new Equipment { Title = "Crane", Description = "Mobile heavy lifting equipment", Price = 350000m, Vendor = hitachi },
+                new Equipment { Title = "Skid Steer", Description = "Compact and maneuverable loader", Price = 85000m, Vendor = acme },
+                new Equipment { Title = "Trencher", Description = "Digging trenches for piping", Price = 95000m, Vendor = global },
+                new Equipment { Title = "Compactor", Description = "Soil and asphalt compaction", Price = 110000m, Vendor = caterpillar },
+                new Equipment { Title = "Paver", Description = "Asphalt laying machine", Price = 140000m, Vendor = johnDeere },
+                new Equipment { Title = "Concrete Mixer", Description = "Mobile concrete batching", Price = 75000m, Vendor = komatsu },
+                new Equipment { Title = "Telehandler", Description = "Versatile lifting and placing", Price = 130000m, Vendor = volvo },
+                new Equipment { Title = "Articulated Hauler", Description = "Off-road material transport", Price = 240000m, Vendor = hitachi },
+                new Equipment { Title = "Scraper", Description = "Earthmoving and leveling", Price = 280000m, Vendor = acme }
+            );
+            
+            db.SaveChanges();
+            logger.LogInformation("Seed data added successfully");
+        }
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "An error occurred while initializing the database.");
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
     }
 }
+
+// Seed roles and default admin user
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        
+        // Ensure roles exist
+        foreach (var role in new[] { "Admin", "Vendor", "Shopper" })
+            if (!await roleMgr.RoleExistsAsync(role))
+                await roleMgr.CreateAsync(new IdentityRole(role));
+
+        // Create default admin user
+        const string adminEmail = "admin@demo.com", adminPass = "P@ssw0rd!";
+        if (await userMgr.FindByEmailAsync(adminEmail) is null)
+        {
+            var admin = new IdentityUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
+            await userMgr.CreateAsync(admin, adminPass);
+            await userMgr.AddToRoleAsync(admin, "Admin");
+        }
+        
+        // Create test users with multiple roles for demonstration
+        const string vendorShopperEmail = "dual@demo.com", dualPass = "P@ssw0rd!";
+        if (await userMgr.FindByEmailAsync(vendorShopperEmail) is null)
+        {
+            logger.LogInformation("Creating a dual-role user (Vendor and Shopper)");
+            var dualUser = new IdentityUser { UserName = vendorShopperEmail, Email = vendorShopperEmail, EmailConfirmed = true };
+            var result = await userMgr.CreateAsync(dualUser, dualPass);
+            
+            if (result.Succeeded)
+            {
+                await userMgr.AddToRoleAsync(dualUser, "Vendor");
+                await userMgr.AddToRoleAsync(dualUser, "Shopper");
+                logger.LogInformation("Dual-role user created successfully");
+            }
+            else
+            {
+                logger.LogWarning("Failed to create dual-role user: {Errors}", string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the identity data.");
+    }
+}
+
 
 app.Run();

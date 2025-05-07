@@ -30,6 +30,9 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
         [BindProperty]
         public InputModel Input { get; set; }
 
+        [BindProperty]
+        public string UserType { get; set; }
+
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
@@ -71,7 +74,7 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
 
         }
 
-        public IActionResult OnGet(string code = null)
+        public IActionResult OnGet(string code = null, string userType = null)
         {
             if (code == null)
             {
@@ -83,6 +86,7 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
                 {
                     Code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code))
                 };
+                UserType = userType;
                 return Page();
             }
         }
@@ -104,7 +108,9 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
             var result = await _userManager.ResetPasswordAsync(user, Input.Code, Input.Password);
             if (result.Succeeded)
             {
-                return RedirectToPage("./ResetPasswordConfirmation");
+                TempData["StatusMessage"] = "Your password has been reset successfully. You can now log in with your new password.";
+                TempData["StatusType"] = "alert-success";
+                return RedirectToPage("./Login", new { userType = UserType });
             }
 
             foreach (var error in result.Errors)

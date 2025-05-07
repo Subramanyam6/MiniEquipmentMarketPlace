@@ -69,7 +69,11 @@
     {
         <div class="col-md-6 tech-stack-container">
           <div class="retro-tv">
-            <div class="tv-antenna"></div>
+            <div class="tv-antenna">
+              @* V-shaped retro antenna with silver ball tips *@
+              <div class="antenna-tip-left"></div>
+              <div class="antenna-tip-right"></div>
+            </div>
             <div class="tv-frame">
               <div class="tv-screen">
                 <div class="tech-stack-viewport">
@@ -216,7 +220,7 @@
     width: 100%;
     height: 100%;
     z-index: 0;
-    background: @(User.Identity.IsAuthenticated ? "#4CAF50" : "#FF0000");
+    background: @(User.Identity.IsAuthenticated && (TempData["StatusType"] == null || !TempData["StatusType"].ToString().Contains("danger")) ? "#4CAF50" : "#FF0000");
   }
 
   .hero {
@@ -360,25 +364,72 @@
 
   .tv-antenna {
     position: absolute;
-    top: -60px;
+    top: -5px; /* Reduced to position it directly on top of the TV frame */
     left: 50%;
     transform: translateX(-50%);
-    width: 4px;
-    height: 60px;
-    background: linear-gradient(to bottom, #1a1a1a, #2b2b2b);
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    width: 6px;   
+    height: 10px; /* Base height */
+    z-index: 1;
   }
-
+  
+  /* Left antenna rod (using ::before) */
   .tv-antenna::before {
     content: '';
     position: absolute;
-    top: -20px;
-    left: -8px;
-    width: 20px;
-    height: 20px;
-    background: radial-gradient(circle at center, #2b2b2b, #1a1a1a);
+    bottom: 0;
+    left: -6px;
+    width: 3px;
+    height: 60px;
+    background: linear-gradient(to bottom, #888, #444);
+    border-radius: 1px;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.7);
+    transform: rotate(-15deg);
+    transform-origin: bottom center;
+  }
+  
+  /* Add left antenna tip with a silver ball */
+  .tv-antenna .antenna-tip-left {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: silver;
     border-radius: 50%;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+    top: -2px; /* Positioned relative to the antenna container */
+    left: -25px; /* Adjusted to align with the left rod */
+    z-index: 2;
+    transform: translateY(-54px) rotate(-15deg); /* Follow the rod angle */
+    transform-origin: bottom center;
+  }
+  
+  /* Right antenna rod (using ::after) */
+  .tv-antenna::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: -6px;
+    width: 3px;
+    height: 60px;
+    background: linear-gradient(to bottom, #888, #444);
+    border-radius: 1px;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.7);
+    transform: rotate(15deg);
+    transform-origin: bottom center;
+  }
+  
+  /* Add right antenna tip with a silver ball */
+  .tv-antenna .antenna-tip-right {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: silver;
+    border-radius: 50%;
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+    top: -2px; /* Positioned relative to the antenna container */
+    right: -25px; /* Adjusted to align with the right rod */
+    z-index: 2;
+    transform: translateY(-54px) rotate(15deg); /* Follow the rod angle */
+    transform-origin: bottom center;
   }
 
   .tv-leds {

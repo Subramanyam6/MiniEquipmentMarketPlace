@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace MiniEquipmentMarketplace.Controllers
 {   
-    [Authorize(Roles = "Admin,Shopper")]
+    [Authorize(Roles = "Admin,Shopper,Vendor")]
     public class EquipmentController : Controller
     {
         private readonly AppDbContext _context;
@@ -43,10 +43,11 @@ namespace MiniEquipmentMarketplace.Controllers
             "Name"
             );
 
-            var list = await _context.Equipment.Include(e => e.Vendor).ToListAsync();
+            var list = await _context.Equipment
+                .Include(e => e.Vendor)
+                .OrderByDescending(e => e.CreatedAt)
+                .ToListAsync();
             return View(list);
-
-
         }
 
         // GET: Equipment/Details/5
@@ -69,35 +70,77 @@ namespace MiniEquipmentMarketplace.Controllers
         }
 
         // GET: Equipment/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["VendorId"] = new SelectList(_context.Vendors, "VendorId", "Name");
+            if (User.IsInRole("Vendor") && !User.IsInRole("Admin"))
+            {
+                // Get the current user
+                var user = await _userManager.GetUserAsync(User);
+                
+                // Get the vendor associated with this user's email
+                var userVendor = await _context.Vendors.FirstOrDefaultAsync(v => v.Email == user.Email);
+                
+                if (userVendor != null)
+                {
+                    // For vendors, only show their own vendor ID
+                    ViewData["VendorId"] = new SelectList(new List<Vendor> { userVendor }, "VendorId", "Name");
+                }
+                else
+                {
+                    TempData["StatusMessage"] = "Vendor profile not found. Please contact support.";
+                    TempData["StatusType"] = "alert-danger";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+            else
+            {
+                // For admins, show all vendors
+                ViewData["VendorId"] = new SelectList(_context.Vendors, "VendorId", "Name");
+            }
             return View();
         }
 
         // POST: Equipment/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("EquipmentId,Title,Description,Price,VendorId")] Equipment equipment)
+        public async Task<IActionResult> Create([Bind("EquipmentId,Title,Description,Price,VendorId,CreatedAt")] Equipment equipment)
         {
-
-            Console.WriteLine("Hit EquipmentController.Create POST");
-
-            Console.WriteLine("ModelState.IsValid = " + ModelState.IsValid);
-            foreach (var kv in ModelState)
-                foreach (var err in kv.Value.Errors)
-                    Console.WriteLine($"  {kv.Key}: {err.ErrorMessage}");
-
+            if (User.IsInRole("Vendor") && !User.IsInRole("Admin"))
+            {
+                // Get the current user
+                var user = await _userManager.GetUserAsync(User);
+                
+                // Get the vendor associated with this user's email
+                var userVendor = await _context.Vendors.FirstOrDefaultAsync(v => v.Email == user.Email);
+                
+                // Check if the vendor exists and matches the equipment's vendor
+                if (userVendor == null || userVendor.VendorId != equipment.VendorId)
+                {
+                    TempData["StatusMessage"] = "You don't have permission to create equipment for other vendors.";
+                    TempData["StatusType"] = "alert-danger";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
 
             if (ModelState.IsValid)
             {
+                equipment.CreatedAt = DateTime.UtcNow; // Ensure this is always set to current time
                 _context.Add(equipment);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["VendorId"] = new SelectList(_context.Vendors, "VendorId", "VendorId", equipment.VendorId);
+            
+            // If we get here, something failed, redisplay form
+            if (User.IsInRole("Vendor") && !User.IsInRole("Admin"))
+            {
+                var user = await _userManager.GetUserAsync(User);
+                var userVendor = await _context.Vendors.FirstOrDefaultAsync(v => v.Email == user.Email);
+                ViewData["VendorId"] = new SelectList(new List<Vendor> { userVendor }, "VendorId", "Name", equipment.VendorId);
+            }
+            else
+            {
+                ViewData["VendorId"] = new SelectList(_context.Vendors, "VendorId", "Name", equipment.VendorId);
+            }
             return View(equipment);
         }
 
@@ -109,11 +152,33 @@ namespace MiniEquipmentMarketplace.Controllers
                 return NotFound();
             }
 
-            var equipment = await _context.Equipment.FindAsync(id);
+            var equipment = await _context.Equipment
+                .Include(e => e.Vendor)
+                .FirstOrDefaultAsync(m => m.EquipmentId == id);
+        
             if (equipment == null)
             {
                 return NotFound();
             }
+        
+            // Check if the user is a vendor but not an admin
+            if (User.IsInRole("Vendor") && !User.IsInRole("Admin"))
+            {
+                // Get the current user
+                var user = await _userManager.GetUserAsync(User);
+            
+                // Get the vendor associated with this user's email
+                var userVendor = await _context.Vendors.FirstOrDefaultAsync(v => v.Email == user.Email);
+            
+                // Check if the vendor exists and matches the equipment's vendor
+                if (userVendor == null || userVendor.VendorId != equipment.VendorId)
+                {
+                    TempData["StatusMessage"] = "You don't have permission to edit equipment from other vendors.";
+                    TempData["StatusType"] = "alert-danger";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+        
             ViewData["VendorId"] = new SelectList(_context.Vendors, "VendorId", "Name", equipment.VendorId);
             return View(equipment);
         }
@@ -129,11 +194,42 @@ namespace MiniEquipmentMarketplace.Controllers
             {
                 return NotFound();
             }
+        
+            // Check if the user is a vendor but not an admin
+            if (User.IsInRole("Vendor") && !User.IsInRole("Admin"))
+            {
+                // Get the current user
+                var user = await _userManager.GetUserAsync(User);
+            
+                // Get the vendor associated with this user's email
+                var userVendor = await _context.Vendors.FirstOrDefaultAsync(v => v.Email == user.Email);
+            
+                // Check if the vendor exists and matches the equipment's vendor
+                if (userVendor == null || userVendor.VendorId != equipment.VendorId)
+                {
+                    TempData["StatusMessage"] = "You don't have permission to edit equipment from other vendors.";
+                    TempData["StatusType"] = "alert-danger";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    // Get the existing entity to preserve CreatedAt
+                    var existingEquipment = await _context.Equipment.AsNoTracking()
+                        .FirstOrDefaultAsync(e => e.EquipmentId == id);
+                    
+                    if (existingEquipment != null)
+                    {
+                        equipment.CreatedAt = existingEquipment.CreatedAt;
+                    }
+                    else
+                    {
+                        equipment.CreatedAt = DateTime.UtcNow;
+                    }
+                    
                     _context.Update(equipment);
                     await _context.SaveChangesAsync();
                 }
@@ -165,9 +261,28 @@ namespace MiniEquipmentMarketplace.Controllers
             var equipment = await _context.Equipment
                 .Include(e => e.Vendor)
                 .FirstOrDefaultAsync(m => m.EquipmentId == id);
+        
             if (equipment == null)
             {
                 return NotFound();
+            }
+        
+            // Check if the user is a vendor but not an admin
+            if (User.IsInRole("Vendor") && !User.IsInRole("Admin"))
+            {
+                // Get the current user
+                var user = await _userManager.GetUserAsync(User);
+            
+                // Get the vendor associated with this user's email
+                var userVendor = await _context.Vendors.FirstOrDefaultAsync(v => v.Email == user.Email);
+            
+                // Check if the vendor exists and matches the equipment's vendor
+                if (userVendor == null || userVendor.VendorId != equipment.VendorId)
+                {
+                    TempData["StatusMessage"] = "You don't have permission to delete equipment from other vendors.";
+                    TempData["StatusType"] = "alert-danger";
+                    return RedirectToAction(nameof(Index));
+                }
             }
 
             return View(equipment);
@@ -178,12 +293,34 @@ namespace MiniEquipmentMarketplace.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var equipment = await _context.Equipment.FindAsync(id);
-            if (equipment != null)
+            var equipment = await _context.Equipment
+                .Include(e => e.Vendor)
+                .FirstOrDefaultAsync(m => m.EquipmentId == id);
+        
+            if (equipment == null)
             {
-                _context.Equipment.Remove(equipment);
+                return NotFound();
             }
-
+        
+            // Check if the user is a vendor but not an admin
+            if (User.IsInRole("Vendor") && !User.IsInRole("Admin"))
+            {
+                // Get the current user
+                var user = await _userManager.GetUserAsync(User);
+            
+                // Get the vendor associated with this user's email
+                var userVendor = await _context.Vendors.FirstOrDefaultAsync(v => v.Email == user.Email);
+            
+                // Check if the vendor exists and matches the equipment's vendor
+                if (userVendor == null || userVendor.VendorId != equipment.VendorId)
+                {
+                    TempData["StatusMessage"] = "You don't have permission to delete equipment from other vendors.";
+                    TempData["StatusType"] = "alert-danger";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+        
+            _context.Equipment.Remove(equipment);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }

@@ -50,3 +50,8 @@ wwwroot/lib/
 # ========================
 .DS_Store                    # macOS
 Thumbs.db                    # Windows
+
+# ========================
+# Some random cookie file
+# ========================
+cookies.txt

@@ -1,0 +1,27 @@
+name: Deploy Azure Redirect
+
+on:
+  push:
+    branches:
+      - azure-redirect
+  workflow_dispatch:
+
+jobs:
+  deploy-redirect:
+    runs-on: ubuntu-latest
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy redirect files to Azure
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'MiniEquipMarketplace'
+          slot-name: 'Production'
+          package: './azure-redirect'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C997A88C5E67454EBE1631CDF704DD37 }} 

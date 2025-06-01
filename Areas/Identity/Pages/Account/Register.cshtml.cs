@@ -143,8 +143,16 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
                     TempData["StatusMessage"] = $"Your account has been updated to include {UserType} privileges!";
                     TempData["StatusType"] = "alert-success";
                     
-                    // Send welcome email for the new role
-                    await SendWelcomeEmailAsync(Input.Email, UserType);
+                    // Try to send welcome email for the new role, but don't fail if email fails
+                    try
+                    {
+                        await SendWelcomeEmailAsync(Input.Email, UserType);
+                        _logger.LogInformation("Welcome email sent for role addition");
+                    }
+                    catch (Exception emailEx)
+                    {
+                        _logger.LogWarning(emailEx, "Failed to send welcome email for role addition, but role was added successfully");
+                    }
                     
                     // Sign the user in with their existing account
                     await _signInManager.SignInAsync(existingUser, isPersistent: false);
@@ -175,23 +183,44 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
                     }
 
                     var userId = await _userManager.GetUserIdAsync(user);
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                    var callbackUrl = Url.Page(
-                        "/Account/ConfirmEmail",
-                        pageHandler: null,
-                        values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                        protocol: Request.Scheme);
+                    
+                    // Try to send emails, but don't fail registration if email fails
+                    bool emailSent = false;
+                    try
+                    {
+                        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                        var callbackUrl = Url.Page(
+                            "/Account/ConfirmEmail",
+                            pageHandler: null,
+                            values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+                            protocol: Request.Scheme);
 
-                    // Send confirmation email
-                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                        // Send confirmation email
+                        await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
+                            $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
-                    // Send welcome email
-                    await SendWelcomeEmailAsync(Input.Email, UserType);
+                        // Send welcome email
+                        await SendWelcomeEmailAsync(Input.Email, UserType);
+                        
+                        emailSent = true;
+                        _logger.LogInformation("Registration and welcome emails sent successfully");
+                    }
+                    catch (Exception emailEx)
+                    {
+                        _logger.LogWarning(emailEx, "Failed to send registration emails, but user was created successfully");
+                        // Continue with registration success even if email fails
+                    }
 
-                    // Set success message
-                    TempData["StatusMessage"] = "Registration successful!";
+                    // Set success message based on email status
+                    if (emailSent)
+                    {
+                        TempData["StatusMessage"] = "Registration successful! Confirmation and welcome emails sent!";
+                    }
+                    else
+                    {
+                        TempData["StatusMessage"] = "Registration successful! (Email service temporarily unavailable)";
+                    }
                     TempData["StatusType"] = "alert-success";
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)

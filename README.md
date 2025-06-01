@@ -1,12 +1,77 @@
 # Mini Equipment Marketplace
 
-A modern web application for buying and selling heavy machinery and equipment built with ASP.NET Core MVC.
+A comprehensive ASP.NET Core 9.0 MVC application for equipment marketplace with vendor, shopper, and admin functionality. Deployed on Google Cloud Platform with PostgreSQL database and SendGrid email integration.
 
-![Equipment Marketplace Screenshot](screenshots/marketplace.png)
+## 🚀 Live Application
 
-## Overview
+**Application URL**: https://equipment-marketplace-app-457614448632.us-central1.run.app
 
-Mini Equipment Marketplace is a full-featured platform that connects equipment vendors with potential buyers in a secure, user-friendly environment. The application showcases modern web development practices and implements a responsive, visually engaging user interface.
+### Quick Access:
+- **Admin Login**: admin@demo.com / P@ssw0rd!
+- **Vendor Registration**: [Register as Vendor](https://equipment-marketplace-app-457614448632.us-central1.run.app/Identity/Account/Register?userType=Vendor)
+- **Shopper Registration**: [Register as Shopper](https://equipment-marketplace-app-457614448632.us-central1.run.app/Identity/Account/Register?userType=Shopper)
+
+## 🛠️ Deployment
+
+### Automated Deployment Script
+
+The project includes a comprehensive deployment script that handles building and deploying to Google Cloud Run:
+
+```bash
+# Set required environment variables
+export DB_PASSWORD='your_database_password'
+export SENDGRID_API_KEY='your_sendgrid_api_key'  # Optional
+
+# Run deployment
+./gcp-deploy.sh
+```
+
+The script will:
+- ✅ Validate environment variables and gcloud authentication
+- ✅ Build and push Docker image to Google Container Registry
+- ✅ Deploy to Cloud Run with proper configuration
+- ✅ Test the deployment and provide useful endpoints
+
+### Manual Deployment
+
+If you prefer manual deployment:
+
+```bash
+# Build and push Docker image
+docker buildx build --platform linux/amd64 \
+  -t us-central1-docker.pkg.dev/equipment-marketplace/equipment-marketplace-repo/equipment-marketplace-app:latest \
+  --push .
+
+# Deploy to Cloud Run
+gcloud run deploy equipment-marketplace-app \
+  --image us-central1-docker.pkg.dev/equipment-marketplace/equipment-marketplace-repo/equipment-marketplace-app:latest \
+  --platform managed \
+  --region us-central1 \
+  --add-cloudsql-instances equipment-marketplace:us-central1:equipment-marketplace-db \
+  --set-env-vars DB_PASSWORD='your_password',SENDGRID_API_KEY='your_api_key' \
+  --port 8080 \
+  --allow-unauthenticated
+```
+
+## 🏗️ Architecture
+
+### Technology Stack
+- **Framework**: ASP.NET Core 9.0 MVC
+- **Authentication**: ASP.NET Core Identity with roles (Admin, Vendor, Shopper)
+- **Database**: PostgreSQL on Google Cloud SQL
+- **Email Service**: SendGrid
+- **Hosting**: Google Cloud Run
+- **Container**: Docker
+
+### Project Structure
+
+The application follows the MVC (Model-View-Controller) architectural pattern:
+
+- **Models**: Represent the data structures and business logic
+- **Views**: Responsible for rendering the UI using Razor syntax
+- **Controllers**: Handle user requests, process data, and return responses
+
+The project is structured to separate concerns and promote maintainability while keeping the codebase clean and organized.
 
 ## Key Features
 
@@ -38,16 +103,6 @@ Mini Equipment Marketplace is a full-featured platform that connects equipment v
   - Docker
   - Azure App Service & Azure SQL DB
   - Git/GitHub
-
-## Architecture
-
-The application follows the MVC (Model-View-Controller) architectural pattern:
-
-- **Models**: Represent the data structures and business logic
-- **Views**: Responsible for rendering the UI using Razor syntax
-- **Controllers**: Handle user requests, process data, and return responses
-
-The project is structured to separate concerns and promote maintainability while keeping the codebase clean and organized.
 
 ## Getting Started
 

@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MiniEquipmentMarketplace.Models;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.AzureAppServices;
@@ -50,25 +51,43 @@ if (builder.Environment.IsProduction() && !string.IsNullOrEmpty(connectionString
         var logger = LoggerFactory.Create(config => config.AddConsole()).CreateLogger("Startup");
         logger.LogWarning("DB_PASSWORD environment variable not found. Using placeholder.");
     }
+
+    // Allow overriding Cloud SQL instance name, DB user, and DB name via environment variables
+    var instanceName = Environment.GetEnvironmentVariable("INSTANCE_CONNECTION_NAME");
+    if (!string.IsNullOrWhiteSpace(instanceName))
+    {
+        connectionString = Regex.Replace(connectionString, @"Host=/cloudsql/[^;]+", $"Host=/cloudsql/{instanceName}");
+    }
+
+    var dbUser = Environment.GetEnvironmentVariable("DB_USER");
+    if (!string.IsNullOrWhiteSpace(dbUser))
+    {
+        connectionString = Regex.Replace(connectionString, @"Username=[^;]+", $"Username={dbUser}");
+    }
+
+    var dbName = Environment.GetEnvironmentVariable("DB_NAME");
+    if (!string.IsNullOrWhiteSpace(dbName))
+    {
+        connectionString = Regex.Replace(connectionString, @"Database=[^;]+", $"Database={dbName}");
+    }
 }
 
-// Configure email settings with SendGrid API key substitution
+// Configure email settings with Postmark server token
 builder.Services.Configure<EmailSettings>(options =>
 {
     builder.Configuration.GetSection("EmailSettings").Bind(options);
-    
-    // Replace SendGrid API key placeholder in production
+
     if (builder.Environment.IsProduction())
     {
-        var sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY");
-        if (!string.IsNullOrEmpty(sendGridApiKey))
+        var postmarkToken = Environment.GetEnvironmentVariable("POSTMARK_SERVER_TOKEN");
+        if (!string.IsNullOrEmpty(postmarkToken))
         {
-            options.Password = sendGridApiKey;
+            options.ServerToken = postmarkToken;
         }
         else
         {
             var logger = LoggerFactory.Create(config => config.AddConsole()).CreateLogger("Startup");
-            logger.LogWarning("SENDGRID_API_KEY environment variable not found. Email functionality may not work.");
+            logger.LogWarning("POSTMARK_SERVER_TOKEN environment variable not found. Email functionality may not work.");
         }
     }
 });

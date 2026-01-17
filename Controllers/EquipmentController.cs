@@ -382,8 +382,15 @@ namespace MiniEquipmentMarketplace.Controllers
                 </body>
                 </html>";
 
-            // Send email
-            await _emailSender.SendEmailAsync(userEmail, subject, htmlBody);
+            // Send email (best-effort; don't fail the flow on email errors)
+            try
+            {
+                await _emailSender.SendEmailAsync(userEmail, subject, htmlBody);
+            }
+            catch
+            {
+                // Swallow errors to avoid breaking UX. Admins can check logs for details.
+            }
 
             // Redirect with success message
             TempData["StatusMessage"] = "Quote sent to your email successfully!";

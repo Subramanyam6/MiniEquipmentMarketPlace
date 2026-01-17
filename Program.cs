@@ -1,26 +1,37 @@
-using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Microsoft.EntityFrameworkCore;
 using MiniEquipmentMarketplace.Data;
-using Microsoft.Extensions.DependencyInjection;
 using MiniEquipmentMarketplace.Models;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.AzureAppServices;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using MiniEquipmentMarketplace.Services;
-using MiniEquipmentMarketplace.Areas.Identity.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    // Force cookie on HTTPS and HTTP for dev
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;    
-    options.Cookie.SameSite     = SameSiteMode.None;           
-    options.Cookie.Path         = "/";                         
+    options.LoginPath = "/Identity/Account/Login";
+    options.LogoutPath = "/Identity/Account/Logout";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+    
+    // Configure cookies based on environment
+    if (builder.Environment.IsDevelopment())
+    {
+        // Allow cookies on HTTP for local development
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+    }
+    else
+    {
+        // Production: require HTTPS
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+    }
+    
+    options.Cookie.HttpOnly = true;
+    options.ExpireTimeSpan = TimeSpan.FromDays(30);
+    options.SlidingExpiration = true;
 });
 
 // Add services to the container.
@@ -36,59 +47,48 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "MiniEquipmentMarketplace API", Version = "v1" });
 });
 
-// Build connection string with environment variable substitution for production
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (builder.Environment.IsProduction() && !string.IsNullOrEmpty(connectionString))
+// Build connection string - use DATABASE_URL from Render or fall back to appsettings
+var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+if (string.IsNullOrEmpty(connectionString))
 {
-    var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
-    if (!string.IsNullOrEmpty(dbPassword))
-    {
-        connectionString = connectionString.Replace("DB_PASSWORD_PLACEHOLDER", dbPassword);
-    }
-    else
-    {
-        // Log warning but continue - this will help identify if env var is missing
-        var logger = LoggerFactory.Create(config => config.AddConsole()).CreateLogger("Startup");
-        logger.LogWarning("DB_PASSWORD environment variable not found. Using placeholder.");
-    }
-
-    // Allow overriding Cloud SQL instance name, DB user, and DB name via environment variables
-    var instanceName = Environment.GetEnvironmentVariable("INSTANCE_CONNECTION_NAME");
-    if (!string.IsNullOrWhiteSpace(instanceName))
-    {
-        connectionString = Regex.Replace(connectionString, @"Host=/cloudsql/[^;]+", $"Host=/cloudsql/{instanceName}");
-    }
-
-    var dbUser = Environment.GetEnvironmentVariable("DB_USER");
-    if (!string.IsNullOrWhiteSpace(dbUser))
-    {
-        connectionString = Regex.Replace(connectionString, @"Username=[^;]+", $"Username={dbUser}");
-    }
-
-    var dbName = Environment.GetEnvironmentVariable("DB_NAME");
-    if (!string.IsNullOrWhiteSpace(dbName))
-    {
-        connectionString = Regex.Replace(connectionString, @"Database=[^;]+", $"Database={dbName}");
-    }
+    // Fall back to configuration file for local development
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+}
+else
+{
+    // Parse Render's DATABASE_URL format (postgres://user:pass@host:port/dbname)
+    // and convert to Npgsql format with SSL
+    var databaseUri = new Uri(connectionString);
+    var userInfo = databaseUri.UserInfo.Split(':');
+    
+    connectionString = $"Host={databaseUri.Host};" +
+                      $"Port={databaseUri.Port};" +
+                      $"Database={databaseUri.LocalPath.TrimStart('/')};" +
+                      $"Username={userInfo[0]};" +
+                      $"Password={userInfo[1]};" +
+                      $"SSL Mode=Require;" +
+                      $"Trust Server Certificate=true";
+    
+    var logger = LoggerFactory.Create(config => config.AddConsole()).CreateLogger("Startup");
+    logger.LogInformation("Using DATABASE_URL from environment for PostgreSQL connection");
 }
 
-// Configure email settings with Postmark server token
+// Configure email settings with Postmark server token from environment
 builder.Services.Configure<EmailSettings>(options =>
 {
     builder.Configuration.GetSection("EmailSettings").Bind(options);
 
-    if (builder.Environment.IsProduction())
+    // Always check for POSTMARK_SERVER_TOKEN environment variable
+    var postmarkToken = Environment.GetEnvironmentVariable("POSTMARK_SERVER_TOKEN");
+    if (!string.IsNullOrEmpty(postmarkToken))
     {
-        var postmarkToken = Environment.GetEnvironmentVariable("POSTMARK_SERVER_TOKEN");
-        if (!string.IsNullOrEmpty(postmarkToken))
-        {
-            options.ServerToken = postmarkToken;
-        }
-        else
-        {
-            var logger = LoggerFactory.Create(config => config.AddConsole()).CreateLogger("Startup");
-            logger.LogWarning("POSTMARK_SERVER_TOKEN environment variable not found. Email functionality may not work.");
-        }
+        options.ServerToken = postmarkToken;
+    }
+    else if (builder.Environment.IsProduction())
+    {
+        var logger = LoggerFactory.Create(config => config.AddConsole()).CreateLogger("Startup");
+        logger.LogWarning("POSTMARK_SERVER_TOKEN environment variable not found. Email functionality may not work.");
     }
 });
 
@@ -121,7 +121,6 @@ builder.Services.AddHttpContextAccessor();
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
-builder.Logging.AddAzureWebAppDiagnostics();
 
 
 var app = builder.Build();

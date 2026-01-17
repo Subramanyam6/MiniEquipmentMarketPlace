@@ -1,0 +1,29 @@
+services:
+  # Web Service - ASP.NET Core Application
+  - type: web
+    name: equipment-marketplace
+    runtime: docker
+    region: oregon  # Free tier available in Oregon
+    plan: free
+    branch: main
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: equipment-marketplace-db
+          property: connectionString
+      - key: POSTMARK_SERVER_TOKEN
+        sync: false  # You'll set this manually in Render dashboard
+    autoDeploy: true
+
+databases:
+  # PostgreSQL Database - Free Tier
+  - name: equipment-marketplace-db
+    databaseName: equipmentmarketplace
+    user: equipmentadmin
+    region: oregon
+    plan: free
+    ipAllowList: []  # Allow connections from Render services

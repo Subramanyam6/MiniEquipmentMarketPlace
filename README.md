@@ -1,185 +1,337 @@
 # Mini Equipment Marketplace
 
-A comprehensive ASP.NET Core 9.0 MVC application for equipment marketplace with vendor, shopper, and admin functionality. Deployed on Google Cloud Platform with PostgreSQL database and SendGrid email integration.
+A comprehensive ASP.NET Core 9.0 MVC application for equipment marketplace with vendor, shopper, and admin functionality. Deployed on Render.com with PostgreSQL database and Postmark email integration.
 
-## 🚀 Live Application
+## 🚀 Quick Deploy to Render.com
 
-**Application URL**: https://equipment-marketplace-app-457614448632.us-central1.run.app
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com)
 
-### Quick Access:
-- **Admin Login**: admin@demo.com / P@ssw0rd!
-- **Vendor Registration**: [Register as Vendor](https://equipment-marketplace-app-457614448632.us-central1.run.app/Identity/Account/Register?userType=Vendor)
-- **Shopper Registration**: [Register as Shopper](https://equipment-marketplace-app-457614448632.us-central1.run.app/Identity/Account/Register?userType=Shopper)
+**See [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) for complete deployment guide.**
 
-## 🛠️ Deployment
+### Quick Start:
+1. Push this repo to GitHub
+2. Connect to Render.com
+3. Render auto-detects `render.yaml`
+4. Add `POSTMARK_SERVER_TOKEN` environment variable
+5. Deploy! 🎉
 
-### Automated Deployment Script
-
-The project includes a comprehensive deployment script that handles building and deploying to Google Cloud Run:
-
-```bash
-# Set required environment variables
-export DB_PASSWORD='your_database_password'
-export SENDGRID_API_KEY='your_sendgrid_api_key'  # Optional
-
-# Run deployment
-./gcp-deploy.sh
-```
-
-The script will:
-- ✅ Validate environment variables and gcloud authentication
-- ✅ Build and push Docker image to Google Container Registry
-- ✅ Deploy to Cloud Run with proper configuration
-- ✅ Test the deployment and provide useful endpoints
-
-### Manual Deployment
-
-If you prefer manual deployment:
-
-```bash
-# Build and push Docker image
-docker buildx build --platform linux/amd64 \
-  -t us-central1-docker.pkg.dev/equipment-marketplace/equipment-marketplace-repo/equipment-marketplace-app:latest \
-  --push .
-
-# Deploy to Cloud Run
-gcloud run deploy equipment-marketplace-app \
-  --image us-central1-docker.pkg.dev/equipment-marketplace/equipment-marketplace-repo/equipment-marketplace-app:latest \
-  --platform managed \
-  --region us-central1 \
-  --add-cloudsql-instances equipment-marketplace:us-central1:equipment-marketplace-db \
-  --set-env-vars DB_PASSWORD='your_password',SENDGRID_API_KEY='your_api_key' \
-  --port 8080 \
-  --allow-unauthenticated
-```
+---
 
 ## 🏗️ Architecture
 
 ### Technology Stack
 - **Framework**: ASP.NET Core 9.0 MVC
 - **Authentication**: ASP.NET Core Identity with roles (Admin, Vendor, Shopper)
-- **Database**: PostgreSQL on Google Cloud SQL
-- **Email Service**: SendGrid
-- **Hosting**: Google Cloud Run
-- **Container**: Docker
+- **Database**: PostgreSQL 15
+- **Email Service**: Postmark
+- **Hosting**: Render.com (Docker)
+- **Container**: Multi-stage Docker build
 
 ### Project Structure
 
-The application follows the MVC (Model-View-Controller) architectural pattern:
+```
+MiniEquipmentMarketplace/
+├── Controllers/          # MVC Controllers
+│   ├── Api/             # API endpoints
+│   ├── Equipment/       # Equipment CRUD
+│   ├── Vendors/         # Vendor management
+│   └── Home/            # Public pages
+├── Models/              # Data models
+├── Views/               # Razor views
+├── Data/                # Database context
+├── Services/            # Email service
+├── Areas/Identity/      # Authentication pages
+├── wwwroot/             # Static files (CSS, JS, images)
+├── Dockerfile           # Docker configuration
+└── render.yaml          # Render.com Blueprint
+```
 
-- **Models**: Represent the data structures and business logic
-- **Views**: Responsible for rendering the UI using Razor syntax
-- **Controllers**: Handle user requests, process data, and return responses
+---
 
-The project is structured to separate concerns and promote maintainability while keeping the codebase clean and organized.
+## ✨ Key Features
 
-## Key Features
+### User Management
+- **Role-Based Access Control**: Admin, Vendor, Shopper roles
+- **Secure Authentication**: ASP.NET Core Identity
+- **Email Verification**: Postmark integration
+- **Password Reset**: Secure token-based system
 
-- **User Role Management**: Support for multiple user roles (Admin, Vendor, Shopper) with role-specific functionalities and access control
-- **Equipment Listings**: Vendors can create, edit, and manage equipment listings with images, descriptions, and pricing
-- **User Authentication**: Secure authentication system with email verification and password reset functionality
-- **Responsive Design**: Mobile-friendly interface that works across devices of all sizes
-- **Real-time Visual Feedback**: Interactive UI elements with animations and transitions for improved user experience
-- **Data Persistence**: SQL Server database with Entity Framework Core for reliable data storage and retrieval
-- **Secure Communication**: Email notifications for account activities and transaction updates
+### Equipment Marketplace
+- **CRUD Operations**: Create, Read, Update, Delete equipment
+- **Vendor Management**: Vendors can manage their listings
+- **Search & Filter**: Find equipment easily
+- **Responsive Design**: Works on all devices
 
-## Technology Stack
+### Admin Features
+- Manage all equipment listings
+- Manage vendors and users
+- View system statistics
+- Role assignment
 
-- **Backend**:
-  - ASP.NET Core MVC (.NET 9 & C#)
-  - Entity Framework Core
-  - ASP.NET Core Identity
-  - SQL Server
+### Technical Features
+- **RESTful API**: Swagger documentation included
+- **Database Migrations**: Automatic on deployment
+- **Seed Data**: Auto-populated demo data
+- **Logging**: Console logging for debugging
+- **Health Checks**: Built-in monitoring
 
-- **Frontend**:
-  - HTML5/CSS3
-  - JavaScript
-  - Bootstrap
-  - jQuery
-  - Particles.js
-  - Font Awesome
+---
 
-- **DevOps & Infrastructure**:
-  - Docker
-  - Azure App Service & Azure SQL DB
-  - Git/GitHub
-
-## Getting Started
+## 🛠️ Local Development
 
 ### Prerequisites
-
 - .NET 9 SDK
-- SQL Server (or SQL Server Express)
-- Visual Studio 2022 or Visual Studio Code
+- PostgreSQL 15+
+- Docker (optional)
 
-### Installation
+### Setup
 
-1. Clone the repository:
-   ```
+1. **Clone the repository**
+   ```bash
    git clone https://github.com/Subramanyam6/MiniEquipmentMarketplace.git
-   ```
-
-2. Navigate to the project directory:
-   ```
    cd MiniEquipmentMarketplace
    ```
 
-3. Restore dependencies:
+2. **Start PostgreSQL**
+   ```bash
+   # Using Docker
+   docker run -d \
+     --name postgres \
+     -e POSTGRES_PASSWORD=postgres \
+     -e POSTGRES_DB=equipmentmarketplace \
+     -p 5432:5432 \
+     postgres:15
+   
+   # Or install PostgreSQL locally
    ```
+
+3. **Restore dependencies**
+   ```bash
    dotnet restore
    ```
 
-4. Update the database connection string in `appsettings.json` to point to your SQL Server instance.
-
-5. Apply database migrations:
-   ```
+4. **Run migrations**
+   ```bash
    dotnet ef database update
    ```
 
-6. Run the application:
-   ```
+5. **Run the application**
+   ```bash
    dotnet run
    ```
 
-7. Open your browser and navigate to `https://localhost:5001` or `http://localhost:5000`.
+6. **Access the app**
+   - Navigate to `https://localhost:5001` or `http://localhost:5000`
 
-## Usage
+---
 
-The application provides different functionalities based on user roles:
+## 🔑 Default Credentials
 
-- **Admin**: Can manage all equipment listings, vendors, and users
-- **Vendor**: Can create and manage their equipment listings
-- **Shopper**: Can browse and purchase equipment
+After first run, use these credentials:
 
-### Demo Accounts
+- **Admin**: `admin@demo.com` / `P@ssw0rd!`
+- **Dual Role User**: `dual@demo.com` / `P@ssw0rd!` (Vendor + Shopper)
 
-For testing purposes, you can register new accounts or use these demo credentials:
+**⚠️ Change these passwords in production!**
 
-- **Admin**: admin@example.com / Password123!
-- **Vendor**: vendor@example.com / Password123!
-- **Shopper**: shopper@example.com / Password123!
+---
 
-## Contributing
+## 📧 Email Configuration
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+### Where to Add Your Postmark Token
+
+**File**: `appsettings.json` (for local development)
+
+```json
+{
+  "EmailSettings": {
+    "ServerToken": "YOUR_POSTMARK_TOKEN_HERE",
+    "FromName": "Equipment Marketplace",
+    "FromEmail": "your-verified-email@example.com"
+  }
+}
+```
+
+**For Render.com Production**:
+- Add `POSTMARK_SERVER_TOKEN` as environment variable in Render dashboard
+- See [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) for details
+
+### Get Postmark Token
+1. Sign up at [Postmark](https://postmarkapp.com/)
+2. Create a server
+3. Copy the **Server API Token**
+4. Verify your sender email address
+
+---
+
+## 🐳 Docker
+
+### Build and Run Locally
+
+```bash
+# Build image
+docker build -t equipment-marketplace .
+
+# Run container
+docker run -d \
+  -p 8080:8080 \
+  -e DATABASE_URL="postgres://user:pass@host:5432/db" \
+  -e POSTMARK_SERVER_TOKEN="your-token" \
+  equipment-marketplace
+```
+
+### Docker Compose (Coming Soon)
+
+---
+
+## 🧪 API Documentation
+
+Swagger UI is available at:
+- **Local**: `http://localhost:5000/swagger`
+- **Production**: `https://your-app.onrender.com/swagger`
+
+### Sample API Endpoints
+
+```
+GET    /api/equipment          # List all equipment
+GET    /api/equipment/{id}     # Get equipment by ID
+POST   /api/equipment          # Create equipment (Auth required)
+PUT    /api/equipment/{id}     # Update equipment (Auth required)
+DELETE /api/equipment/{id}     # Delete equipment (Auth required)
+```
+
+---
+
+## 📊 Database Schema
+
+### Main Tables
+
+**Equipment**
+- Id, Title, Description, Price, VendorId, CreatedAt
+
+**Vendors**
+- Id, Name, Email, CreatedAt
+
+**AspNetUsers** (Identity)
+- Id, UserName, Email, PasswordHash, etc.
+
+**AspNetRoles** (Identity)
+- Id, Name (Admin, Vendor, Shopper)
+
+---
+
+## 🚀 Deployment
+
+### Render.com (Recommended)
+
+See [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) for complete guide.
+
+**TL;DR**:
+1. Push to GitHub
+2. Connect to Render
+3. Apply Blueprint
+4. Done!
+
+### Other Platforms
+
+The Docker setup works on:
+- **Railway**: Use Dockerfile
+- **Fly.io**: Use Dockerfile
+- **Heroku**: Use Dockerfile + Heroku Postgres
+- **DigitalOcean App Platform**: Use Dockerfile
+
+---
+
+## 🔧 Configuration Files
+
+### `render.yaml`
+Infrastructure-as-Code for Render.com deployment. Defines:
+- Web service configuration
+- PostgreSQL database
+- Environment variables
+- Auto-deploy settings
+
+### `appsettings.json`
+Local development configuration:
+- Database connection string
+- Logging levels
+- Email settings
+
+### `appsettings.Production.json`
+Production overrides:
+- Production logging levels
+- Email configuration (token from env var)
+
+### `Dockerfile`
+Multi-stage Docker build:
+1. Build stage: Compile .NET application
+2. Runtime stage: Run with minimal ASP.NET runtime
+
+---
+
+## 🧹 Project Cleanup
+
+This project has been cleaned of:
+- ❌ GCP Cloud Run configurations
+- ❌ Azure App Service configurations
+- ❌ Unused deployment scripts
+- ❌ Legacy connection string formats
+
+Now optimized for:
+- ✅ Render.com deployment
+- ✅ Docker-first approach
+- ✅ Standard PostgreSQL connections
+- ✅ Environment variable configuration
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please:
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
+---
+
+## 📝 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Acknowledgments
+---
+
+## 🙏 Acknowledgments
 
 - Sandhills Global for the inspiration
-- All the open-source libraries and tools that made this project possible
+- ASP.NET Core team for the excellent framework
+- Render.com for free hosting
+- All open-source contributors
 
-## Contact
+---
 
-Bala Subramanyam - bduggirala2@huskers.unl.edu
+## 📞 Contact
 
-Project Link: [https://github.com/Subramanyam6/MiniEquipmentMarketplace](https://github.com/Subramanyam6/MiniEquipmentMarketplace) 
+**Bala Subramanyam**
+- Email: bduggirala2@huskers.unl.edu
+- GitHub: [@Subramanyam6](https://github.com/Subramanyam6)
+
+**Project Link**: [https://github.com/Subramanyam6/MiniEquipmentMarketplace](https://github.com/Subramanyam6/MiniEquipmentMarketplace)
+
+---
+
+## 🎯 Roadmap
+
+- [ ] Add shopping cart functionality
+- [ ] Implement payment processing
+- [ ] Add image upload for equipment
+- [ ] Real-time chat between vendors and shoppers
+- [ ] Advanced search and filtering
+- [ ] Equipment reviews and ratings
+- [ ] Mobile app (React Native)
+
+---
+
+**Made with ❤️ using ASP.NET Core 9.0**

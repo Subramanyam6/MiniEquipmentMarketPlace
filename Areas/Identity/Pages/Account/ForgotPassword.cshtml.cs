@@ -77,10 +77,17 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
                     values: new { area = "Identity", code, userType = TempData["UserType"] },
                     protocol: Request.Scheme);
 
-                await _emailSender.SendEmailAsync(
-                    Input.Email,
-                    "Reset Password",
-                    $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                try
+                {
+                    await _emailSender.SendEmailAsync(
+                        Input.Email,
+                        "Reset Password",
+                        $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                }
+                catch (Exception)
+                {
+                    // Do not reveal email delivery issues to the user; proceed to confirmation for security
+                }
 
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }

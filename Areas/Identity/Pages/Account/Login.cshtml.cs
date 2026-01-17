@@ -128,17 +128,21 @@ namespace MiniEquipmentMarketplace.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User logged in.");
 
-                    // Get user and verify role
-                    var user = await _userManager.FindByEmailAsync(Input.Email);
-                    var roles = await _userManager.GetRolesAsync(user);
-
-                    if (!roles.Contains(UserType))
+                    // Only verify role if userType is specified
+                    if (!string.IsNullOrEmpty(UserType))
                     {
-                        await _signInManager.SignOutAsync();
-                        ModelState.AddModelError(string.Empty, "Invalid account type selected.");
-                        TempData["StatusMessage"] = "Invalid account type selected.";
-                        TempData["StatusType"] = "alert-danger";
-                        return Page();
+                        // Get user and verify role
+                        var user = await _userManager.FindByEmailAsync(Input.Email);
+                        var roles = await _userManager.GetRolesAsync(user);
+
+                        if (!roles.Contains(UserType))
+                        {
+                            await _signInManager.SignOutAsync();
+                            ModelState.AddModelError(string.Empty, "Invalid account type selected.");
+                            TempData["StatusMessage"] = "Invalid account type selected.";
+                            TempData["StatusType"] = "alert-danger";
+                            return Page();
+                        }
                     }
 
                     // Set success message

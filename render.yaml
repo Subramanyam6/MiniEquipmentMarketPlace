@@ -5,7 +5,7 @@ services:
     runtime: docker
     region: oregon  # Free tier available in Oregon
     plan: free
-    branch: main
+    branch: migrating-to-render-com
     dockerfilePath: ./Dockerfile
     healthCheckPath: /
     envVars:

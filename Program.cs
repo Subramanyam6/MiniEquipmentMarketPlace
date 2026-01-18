@@ -61,9 +61,10 @@ else
     // and convert to Npgsql format with SSL
     var databaseUri = new Uri(connectionString);
     var userInfo = databaseUri.UserInfo.Split(':');
+    var port = databaseUri.Port > 0 ? databaseUri.Port : 5432; // Default to 5432 if not specified
     
     connectionString = $"Host={databaseUri.Host};" +
-                      $"Port={databaseUri.Port};" +
+                      $"Port={port};" +
                       $"Database={databaseUri.LocalPath.TrimStart('/')};" +
                       $"Username={userInfo[0]};" +
                       $"Password={userInfo[1]};" +
